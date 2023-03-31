@@ -1,2 +1,1 @@
-# ComplementosTesisDoctorado
-Códigos complementarios de la tesis de doctorado.
+# Códigos complementarios de la tesis de doctorado.
