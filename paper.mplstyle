@@ -1,0 +1,9 @@
+axes.titlesize : 16
+axes.labelsize : 14
+lines.linewidth : 1.5
+lines.markersize : 6
+xtick.labelsize : 12
+ytick.labelsize : 12
+text.usetex : true
+font.size:    20.0
+font.family : Helvetica
