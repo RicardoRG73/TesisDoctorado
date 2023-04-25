@@ -7,21 +7,24 @@ N = 11                  # número de nodos
 x = np.linspace(0,1,N)
 h = x[1] - x[0]
 
+""" Estilo de las gráficas """
 plt.style.use(['seaborn-v0_8','paper.mplstyle'])
 plt.rcParams['text.usetex'] = True
 
+""" Gráfia de los nodos """
 fig = plt.figure(figsize=(8,2.5))
 plt.plot(x,0*x, marker='o')
 
+# Textos
 delta = 0.05
 plt.text(x=x[N//2], y=delta, s=r"$x_i$", horizontalalignment="center")
 plt.text(x=x[N//2+1], y=delta, s=r"$x_{i+1}$", ha="center")
 plt.text(x=x[N//2-1], y=delta, s=r"$x_{i-1}$", ha="center")
 
+# longitud h
 puntos_h = np.vstack((np.array([x[N//2], x[N//2+1]]), -delta*np.array([1, 1])))
 plt.plot(puntos_h[0], puntos_h[1], marker="o", color="tab:green")
 plt.text(x=np.mean(puntos_h[0]), y=np.mean(puntos_h[1])-delta, s=r"$h$", ha="center", color="tab:green")
-
 
 plt.axis("equal")
 plt.title("Nodos")
