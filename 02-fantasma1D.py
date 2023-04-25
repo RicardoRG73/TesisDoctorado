@@ -13,7 +13,7 @@ plt.scatter(1.1, 0, s=50, color="tab:green")
 
 plt.text(x=1.1, y=0.01, s=r"$p_g$", color="tab:green", ha="center")
 
-plt.title("Nodo Fantasma")
+plt.title("Dominio y Nodo Fantasma")
 
 
 plt.show()
