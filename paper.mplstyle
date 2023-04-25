@@ -1,10 +1,11 @@
-axes.titlesize : 18
-axes.labelsize : 16
-axes.grid : True
-lines.linewidth : 2
-lines.markersize : 8
-xtick.labelsize : 14
-ytick.labelsize : 14
-text.usetex : True
-font.size:    16.0
-font.family : serif
+axes.titlesize :    18
+axes.labelsize :    16
+axes.grid :         True
+lines.linewidth :   2
+lines.markersize :  8
+xtick.labelsize :   14
+ytick.labelsize :   14
+text.usetex :       True
+font.size :         16.0
+legend.fontsize :   14
+font.family :       serif
