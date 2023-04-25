@@ -9,7 +9,6 @@ h = x[1] - x[0]
 
 """ Estilo de las gráficas """
 plt.style.use(['seaborn-v0_8','paper.mplstyle'])
-plt.rcParams['text.usetex'] = True
 
 """ Gráfia de los nodos """
 fig = plt.figure(figsize=(8,2.5))

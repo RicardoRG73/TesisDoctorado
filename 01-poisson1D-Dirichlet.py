@@ -49,7 +49,7 @@ U = np.linalg.solve(K,F)
 plt.style.use(['seaborn-v0_8','paper.mplstyle'])
 plt.rcParams['text.usetex'] = True
 
-fig = plt.figure(figsize=(8,4))
+fig = plt.figure(figsize=(7,3))
 plt.plot(x,U, marker='o')
 plt.axis("equal")
 plt.title("Solución")
