@@ -31,7 +31,7 @@ Ktemp = np.diag(-2*np.ones(N-2)) \
 K[1:-1, 1:-1] = Ktemp
 K[0,0] = 1
 K[-1,-1] = 1
-print("\n\n\nK =\n", K)
+print("\n\n\nK = 1/h^2 * \n", K)
 K = K / h**2
 
 F = f(x)
@@ -47,13 +47,14 @@ U = np.linalg.solve(K,F)
 """ Gáficas """
 plt.style.use(['seaborn-v0_8','paper.mplstyle'])
 
-fig = plt.figure(figsize=(7,3))
-plt.plot(x,U, marker='o', label="Numérica")
+fig = plt.figure(figsize=(14,8))
+plt.plot(x,U, '-o', label="Numérica")
 plt.axis("equal")
 plt.title("Solución")
-
+plt.xlabel(r"$x$")
+plt.ylabel(r"$u(x)$")
 # exacta
-plt.plot(x, 0.5*(x**2 - x), label=r"Exacta $\frac{1}{2}(x^2-x)$")
+plt.plot(x, 0.5*(x**2 - x), label=r"Exacta $u=\frac{1}{2}(x^2-x)$")
 plt.legend()
 
 plt.show()

@@ -6,10 +6,10 @@ y = np.zeros(x.shape)
 
 plt.style.use(['seaborn-v0_8','paper.mplstyle'])
 
-fig = plt.figure(figsize=(7,2.5))
-plt.scatter(x,y, s=50)
+fig = plt.figure(figsize=(14,7))
+plt.scatter(x,y)
 plt.plot(x,y)
-plt.scatter(1.1, 0, s=50, color="tab:green")
+plt.scatter(1.1, 0, color="tab:green")
 
 plt.text(x=1.1, y=0.01, s=r"$p_g$", color="tab:green", ha="center")
 

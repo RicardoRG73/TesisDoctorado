@@ -33,7 +33,7 @@ K[0,0] = 1
 K[-1,-1] = -2
 K[-2,-1] = 1
 K[-1,-2] = 2
-print("\n\n\nK =\n", K)
+print("\n\n\nK = 1/h^2 * \n", K)
 K = K / h**2
 
 F = f(x)
@@ -48,14 +48,16 @@ U = np.linalg.solve(K,F)
 """ Gáficas """
 plt.style.use(['seaborn-v0_8','paper.mplstyle'])
 
-fig = plt.figure(figsize=(7,3))
-plt.plot(x,U, marker='o', label="Numérica")
+fig = plt.figure(figsize=(14,8))
+plt.plot(x,U, '-o', label="Numérica")
 plt.axis("equal")
 plt.title("Solución")
+plt.xlabel(r"$x$")
+plt.ylabel(r"$u(x)$")
 
 
 # Solución exacta
-plt.plot(x,x**2/2-x, label=r"Exacta $u=\frac{x^2}{2}-x$", lw=1)
+plt.plot(x,x**2/2-x, label=r"Exacta $u=\frac{x^2}{2}-x$")
 plt.legend()
 
 plt.show()

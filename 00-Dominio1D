@@ -11,7 +11,7 @@ h = x[1] - x[0]
 plt.style.use(['seaborn-v0_8','paper.mplstyle'])
 
 """ Gráfia de los nodos """
-fig = plt.figure(figsize=(8,2.5))
+fig = plt.figure(figsize=(15,7))
 plt.plot(x,0*x, marker='o')
 
 # Textos
