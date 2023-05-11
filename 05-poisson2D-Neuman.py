@@ -146,10 +146,10 @@ mapa_de_color = "plasma"
 print("\nGraficando")
 fig = plt.figure(figsize=(10,8))
 ax = plt.axes(projection="3d")
-ax.plot_trisurf(
-    p[:,0],
-    p[:,1],
-    U,
+ax.plot_surface(
+    p[:,0].reshape((n,m)),
+    p[:,1].reshape((n,m)),
+    U.reshape((n,m)),
     cmap=mapa_de_color,
     linewidth=1,
     antialiased=False
@@ -157,6 +157,31 @@ ax.plot_trisurf(
 ax.view_init(azim=-120, elev=20)
 
 plt.title("Solución (3D)")
+ax.set_xlabel("$x$")
+ax.set_ylabel("$y$")
+ax.set_zlabel("$u(x,y)$")
+
+
+from scipy.interpolate import griddata
+resolution_factor = 3       # máximo 3
+x_grid, y_grid = np.meshgrid(
+    np.linspace(a0,b0,n*resolution_factor),
+    np.linspace(a1,b1,m*resolution_factor)
+)
+z_grid = griddata(p, U, (x_grid, y_grid), method="cubic")
+fig = plt.figure(figsize=(10,8))
+ax = plt.axes(projection="3d")
+ax.plot_surface(
+    x_grid,
+    y_grid,
+    z_grid,
+    cmap=mapa_de_color,
+    linewidth=0,
+    antialiased=False
+)
+ax.view_init(azim=-120, elev=20)
+
+plt.title("Solución (3D) Interpolada")
 ax.set_xlabel("$x$")
 ax.set_ylabel("$y$")
 ax.set_zlabel("$u(x,y)$")

@@ -137,10 +137,10 @@ mapa_de_color = "plasma"
 print("\nGraficando")
 fig = plt.figure(figsize=(10,8))
 ax = plt.axes(projection="3d")
-ax.plot_trisurf(
-    p[:,0],
-    p[:,1],
-    U,
+ax.plot_surface(
+    p[:,0].reshape((n,m)),
+    p[:,1].reshape((n,m)),
+    U.reshape((n,m)),
     cmap=mapa_de_color,
     linewidth=1,
     antialiased=False
