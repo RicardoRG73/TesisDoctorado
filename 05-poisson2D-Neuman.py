@@ -7,7 +7,7 @@ en el dominio [0,2]x[0,1]
 con condiciones de frontera
 u(0,y) = 0
 u(2,y) = 2
-u(x,0) = x
+u_n(x,0) = 0    Neumann
 u(x,1) = x
 
 y fuente
@@ -40,7 +40,7 @@ p = np.vstack((x.T.flatten(), y.T.flatten())).T
 f = lambda p: -5        # fuente
 u_izq = lambda p: 0     # dirichlet izquierda
 u_der = lambda p: 2 + np.sin(np.pi*p[1])    # dirichlet derecha
-u_inf = lambda p: p[0]  # dirichlet inferior
+u_inf = lambda p: -10*p[0]                  # Neumann inferior
 u_sup = lambda p: p[0]  # dirichlet superior
 
 
@@ -54,7 +54,7 @@ b_der = np.arange(N-m,N)
 b_inf = np.arange(m,N-m,m)
 b_sup = np.arange(2*m-1,N-m,m)
 
-B = np.hstack((b_izq,b_der,b_inf,b_sup))
+B = np.hstack((b_izq,b_der,b_sup))
 
 interiores = np.setdiff1d(np.arange(N), B)
 
@@ -67,6 +67,9 @@ plt.scatter(p[b_izq,0], p[b_izq,1], label="Frontera Izquierda")
 plt.scatter(p[b_der,0], p[b_der,1], label="Frontera Derecha")
 plt.scatter(p[b_inf,0], p[b_inf,1], label="Frontera Inferior")
 plt.scatter(p[b_sup,0], p[b_sup,1], label="Frontera Superior")
+
+# for i in np.hstack((B,interiores)):
+#     plt.text(p[i,0], p[i,1], str(i))
 
 plt.xlabel("$x$")
 plt.ylabel("$y$")
@@ -81,10 +84,20 @@ for i in interiores:
     K[i,i+m] = 1/h**2
     K[i,i-m] = 1/h**2
 
+for i in b_inf:
+    K[i,i] = - 2/h**2 - 2/k**2
+    K[i,i+1] = 2/k**2
+    K[i,i+m] = 1/h**2
+    K[i,i-m] = 1/h**2
+
+
 # llenado del vector F
 print("\nEnsamblando el vector F")
 for i in interiores:
     F[i] = f(p[i])
+
+for i in b_inf:
+    F[i] = f(p[i]) - 2 * u_inf(p[i]) / k
 
 # Valores que pasan al lado derecho
 K = sparse.csr_array(K)
@@ -100,9 +113,7 @@ for i in b_der:
 print("    - Frontera Superior: " + str(b_sup.shape[0]) + " nodos")
 for i in b_sup:
     F -= K[:,[i]] * u_sup(p[i])
-print("    - Frontera Inferior: " + str(b_inf.shape[0]) + " nodos")
-for i in b_inf:
-    F -= K[:,[i]] * u_inf(p[i])
+
 
 # valores en las fronteras
 print("\nCorrigiendo los valores de frontera")
@@ -120,8 +131,6 @@ for i in b_der:
     F[[i]] = u_der(p[i])
 for i in b_sup:
     F[[i]] = u_sup(p[i])
-for i in b_inf:
-    F[[i]] = u_inf(p[i])
 
 
 """ Solución del sistema KU=F """
@@ -145,7 +154,7 @@ ax.plot_trisurf(
     linewidth=1,
     antialiased=False
 )
-ax.view_init(azim=-145, elev=20)
+ax.view_init(azim=-120, elev=20)
 
 plt.title("Solución (3D)")
 ax.set_xlabel("$x$")
@@ -168,20 +177,20 @@ plt.xlabel('$x$')
 plt.ylabel('$y$')
 plt.title("Solución (Contorno)")
 
-fig4 = plt.figure(figsize=(16,8))
-plt.pcolormesh(
-    x,
-    y,
-    U.reshape((n,m)).T,
-    cmap=mapa_de_color,
-    shading='gouraud'
-)
-plt.axis("equal")
-plt.ylim([a1,b1])
-plt.xlabel('$x$')
-plt.ylabel('$y$')
-plt.colorbar()
-plt.title("Solución (Interpolación)")
+# fig4 = plt.figure(figsize=(16,8))
+# plt.pcolormesh(
+#     x,
+#     y,
+#     U.reshape((n,m)).T,
+#     cmap=mapa_de_color,
+#     shading='gouraud'
+# )
+# plt.axis("equal")
+# plt.ylim([a1,b1])
+# plt.xlabel('$x$')
+# plt.ylabel('$y$')
+# plt.colorbar()
+# plt.title("Solución (Interpolación)")
 
 plt.show()
 # %%
