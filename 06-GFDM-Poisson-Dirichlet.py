@@ -35,7 +35,7 @@ geometria.line([3,4], marker=Dirichlet1)    # 3
 geometria.line([4,5], marker=Neuman1)       # 4
 geometria.line([5,6], marker=Neuman1)       # 5
 geometria.line([6,7], marker=Neuman1)       # 6
-geometria.line([7,0], marker=Dirichlet1)    # 7
+geometria.line([7,0], marker=Dirichlet0)    # 7
 
 # superficies
 mat0 = 100
@@ -78,11 +78,31 @@ plt.yticks(fontsize=20)
 
 
 """ Identificación de las diferentes fronteras """
-
+BDir0 = np.asarray(bdofs[Dirichlet0]) - 1
+BDir1 = np.asarray(bdofs[Dirichlet1]) - 1
+BNeu0 = np.asarray(bdofs[Neuman0]) - 1
+BNeu0 = np.setdiff1d(BNeu0, [0,3])
+BNeu1 = np.asarray(bdofs[Neuman1]) - 1
+BNeu1 = np.setdiff1d(BNeu1, [4,7])
 
 plt.figure(figsize=(15,5))
-plt.scatter(coords[:,0], coords[:,1])
-plt.title("Fronteras por color")
+fronteras = (BDir0, BDir1, BNeu0, BNeu1)
+interiores = np.setdiff1d(np.arange(coords.shape[0]) , np.hstack(fronteras))
+etiquetas = (
+    "Dirichlet Izquierda",
+    "Dirichlet Derecha",
+    "Dirichlet Inferior",
+    "Dirichlet Superior"
+)
+
+from graficas import nodos_por_color
+nodos_por_color(
+    boundaries=fronteras,
+    p=coords,
+    labels=etiquetas,
+    interior=interiores,
+    label_interior="Nodos Interiores"
+    )
 
 
 plt.show()

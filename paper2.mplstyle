@@ -7,7 +7,7 @@ xtick.labelsize :   22
 ytick.labelsize :   22
 text.usetex :       False
 font.size :         30
-legend.fontsize :   22
+legend.fontsize :   18
 legend.frameon :    True
 legend.shadow :     True
 font.family :       serif
