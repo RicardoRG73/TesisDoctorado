@@ -1,13 +1,14 @@
 """ Librerías necesarias """
 import numpy as np
-import matplotlib.pyplot as plt
-plt.style.use(['seaborn-v0_8','paper2.mplstyle'])
-mapa_de_color = "plasma"
 
 # calfem-python
 import calfem.geometry as cfg
 import calfem.mesh as cfm
 import calfem.vis_mpl as cfv
+
+import matplotlib.pyplot as plt
+plt.style.use(['seaborn-v0_8','paper.mplstyle'])
+mapa_de_color = "plasma"
 
 """ Objeto geometría """
 geometria = cfg.Geometry()
@@ -23,19 +24,19 @@ geometria.point([60,30])    # 6
 geometria.point([50,25])    # 7
 
 # líneas
-Neuman0 = 10
-Dirichlet0 = 11
-Neuman1 = 12
-Dirichlet1 = 13
+Dirich_left = 10
+Dirich_right = 11
+Dirich_top = 12
+Dirich_bottom = 13
 
-geometria.line([0,1], marker=Neuman0)       # 0
-geometria.line([1,2], marker=Neuman0)       # 1
-geometria.line([2,3], marker=Neuman0)       # 2
-geometria.line([3,4], marker=Dirichlet1)    # 3
-geometria.line([4,5], marker=Neuman1)       # 4
-geometria.line([5,6], marker=Neuman1)       # 5
-geometria.line([6,7], marker=Neuman1)       # 6
-geometria.line([7,0], marker=Dirichlet0)    # 7
+geometria.line([0,1], marker=Dirich_bottom)       # 0
+geometria.line([1,2], marker=Dirich_bottom)       # 1
+geometria.line([2,3], marker=Dirich_bottom)       # 2
+geometria.line([3,4], marker=Dirich_right)    # 3
+geometria.line([4,5], marker=Dirich_top)       # 4
+geometria.line([5,6], marker=Dirich_top)       # 5
+geometria.line([6,7], marker=Dirich_top)       # 6
+geometria.line([7,0], marker=Dirich_left)    # 7
 
 # superficies
 mat0 = 100
@@ -78,15 +79,14 @@ plt.yticks(fontsize=20)
 
 
 """ Identificación de las diferentes fronteras """
-BDir0 = np.asarray(bdofs[Dirichlet0]) - 1
-BDir1 = np.asarray(bdofs[Dirichlet1]) - 1
-BNeu0 = np.asarray(bdofs[Neuman0]) - 1
-BNeu0 = np.setdiff1d(BNeu0, [0,3])
-BNeu1 = np.asarray(bdofs[Neuman1]) - 1
-BNeu1 = np.setdiff1d(BNeu1, [4,7])
+BDirl = np.asarray(bdofs[Dirich_left]) - 1
+BDirr = np.asarray(bdofs[Dirich_right]) - 1
+BDirb = np.asarray(bdofs[Dirich_bottom]) - 1
+BDirb = np.setdiff1d(BDirb, [0,3])
+BDirt = np.asarray(bdofs[Dirich_top]) - 1
+BDirt = np.setdiff1d(BDirt, [4,7])
 
-plt.figure(figsize=(15,5))
-fronteras = (BDir0, BDir1, BNeu0, BNeu1)
+fronteras = (BDirl, BDirr, BDirb, BDirt)
 interiores = np.setdiff1d(np.arange(coords.shape[0]) , np.hstack(fronteras))
 etiquetas = (
     "Dirichlet Izquierda",
@@ -96,6 +96,7 @@ etiquetas = (
 )
 
 from graficas import nodos_por_color
+plt.figure(figsize=(30,8))
 nodos_por_color(
     boundaries=fronteras,
     p=coords,
@@ -104,5 +105,72 @@ nodos_por_color(
     label_interior="Nodos Interiores"
     )
 
+""" Parámetros del problema """
+L = np.array([0,0,0,2,0,2])
+k0 = lambda p: 1
+k1 = lambda p: 1
+f = lambda p: 0.002
+ul = lambda p: 1 + 0.25 * np.sin(np.pi * p[1]/25)
+ur = lambda p: 0
+ub = lambda p: 1 - p[0]/100
+ut = lambda p: 1/80 * (130 - p[0])
+
+materials = {}
+materials["0"] = [k0, interiores]
+
+neumann_boundaries = {}
+
+dirichlet_boundaries = {}
+dirichlet_boundaries["left"] = [BDirl, ul]
+dirichlet_boundaries["right"] = [BDirr, ur]
+dirichlet_boundaries["bottom"] = [BDirb, ub]
+dirichlet_boundaries["top"] = [BDirt, ut]
+
+
+from GFDM import create_system_K_F
+K, F = create_system_K_F(
+    p=coords,
+    triangles=faces,
+    L=L,
+    source=f,
+    materials=materials,
+    neumann_boundaries=neumann_boundaries,
+    dirichlet_boundaries=dirichlet_boundaries,
+    interfaces={}
+)
+
+U = np.linalg.solve(K,F)
+
+fig = plt.figure(figsize=(16,8))
+plt.tricontourf(
+    coords[:,0],
+    coords[:,1],
+    U,
+    levels=20,
+    cmap=mapa_de_color,
+)
+plt.colorbar()
+plt.axis('equal')
+plt.xlabel('$x$')
+plt.ylabel('$y$')
+plt.title("Solución (Contorno)")
+
+plt.style.use("paper3dplot.mplstyle")
+fig = plt.figure(figsize=(10,8))
+ax = plt.axes(projection="3d")
+ax.plot_trisurf(
+    coords[:,0],
+    coords[:,1],
+    U,
+    cmap=mapa_de_color,
+    linewidth=1,
+    antialiased=False
+)
+ax.view_init(azim=-60, elev=20)
+
+plt.title("Solución (3D)")
+ax.set_xlabel("$x$")
+ax.set_ylabel("$y$")
+ax.set_zlabel("$u(x,y)$")
 
 plt.show()
