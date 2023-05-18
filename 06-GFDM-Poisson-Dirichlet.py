@@ -1,7 +1,7 @@
 """ Librerías necesarias """
 import numpy as np
 import matplotlib.pyplot as plt
-plt.style.use(['seaborn-v0_8','paper.mplstyle'])
+plt.style.use(['seaborn-v0_8','paper2.mplstyle'])
 mapa_de_color = "plasma"
 
 # calfem-python
@@ -28,44 +28,61 @@ Dirichlet0 = 11
 Neuman1 = 12
 Dirichlet1 = 13
 
-geometria.line([0,1], marker=Neuman0)
-geometria.line([1,2], marker=Neuman0)
-geometria.line([2,3], marker=Neuman0)
-geometria.line([3,4], marker=Dirichlet1)
-geometria.line([4,5], marker=Neuman1)
-geometria.line([5,6], marker=Neuman1)
-geometria.line([6,7], marker=Neuman1)
-geometria.line([7,0], marker=Dirichlet1)
+geometria.line([0,1], marker=Neuman0)       # 0
+geometria.line([1,2], marker=Neuman0)       # 1
+geometria.line([2,3], marker=Neuman0)       # 2
+geometria.line([3,4], marker=Dirichlet1)    # 3
+geometria.line([4,5], marker=Neuman1)       # 4
+geometria.line([5,6], marker=Neuman1)       # 5
+geometria.line([6,7], marker=Neuman1)       # 6
+geometria.line([7,0], marker=Dirichlet1)    # 7
+
+# superficies
+mat0 = 100
+geometria.surface([0,1,2,3,4,5,6,7], marker=mat0)
 
 # gráfica de la geometría
 cfv.figure(fig_size=(16,5))
-cfv.title('Geometría')
-cfv.draw_geometry(geometria, font_size=26)
+cfv.title('Geometría', fontdict={"fontsize": 32})
+cfv.draw_geometry(geometria, font_size=16, draw_axis=True)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
 
-""" Creating mesh from geometry object """
-# mesh = cfm.GmshMesh(geometria)
+""" Creación del objeto malla usando el objeto geometría """
+mesh = cfm.GmshMesh(geometria)
 
-# mesh.el_type = 2                            # type of element: 2 = triangle
-# mesh.dofs_per_node = 1
-# mesh.el_size_factor = 1
+mesh.el_type = 2                            # type of element: 2 = triangle
+mesh.dofs_per_node = 1
+mesh.el_size_factor = 2
 
-# coords, edof, dofs, bdofs, elementmarkers = mesh.create()   # create the geometry
-# verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
-#     coords,
-#     edof,
-#     mesh.dofs_per_node,
-#     mesh.el_type
-# )
+coords, edof, dofs, bdofs, elementmarkers = mesh.create()   # create the geometry
+verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
+    coords,
+    edof,
+    mesh.dofs_per_node,
+    mesh.el_type
+)
 
-# # mesh plot
-# cfv.figure(fig_size=(8,4))
-# cfv.title('Malla')
-# cfv.draw_mesh(
-#     coords=coords,
-#     edof=edof,
-#     dofs_per_node=mesh.dofs_per_node,
-#     el_type=mesh.el_type,
-#     filled=True
-# )
+# gráfica de la malla
+cfv.figure(fig_size=(16,5))
+cfv.title('Malla', fontdict={"fontsize": 32})
+cfv.draw_mesh(
+    coords=coords,
+    edof=edof,
+    dofs_per_node=mesh.dofs_per_node,
+    el_type=mesh.el_type,
+    filled=True
+)
+plt.xticks(fontsize=20)
+plt.yticks(fontsize=20)
+
+
+""" Identificación de las diferentes fronteras """
+
+
+plt.figure(figsize=(15,5))
+plt.scatter(coords[:,0], coords[:,1])
+plt.title("Fronteras por color")
+
 
 plt.show()
