@@ -26,16 +26,16 @@ geometria.point([50,25])    # 7
 # líneas
 Dirich_left = 10
 Dirich_right = 11
-Dirich_top = 12
-Dirich_bottom = 13
+Neumann_top = 12
+Neumann_bottom = 13
 
-geometria.line([0,1], marker=Dirich_bottom)       # 0
-geometria.line([1,2], marker=Dirich_bottom)       # 1
-geometria.line([2,3], marker=Dirich_bottom)       # 2
+geometria.line([0,1], marker=Neumann_bottom)       # 0
+geometria.line([1,2], marker=Neumann_bottom)       # 1
+geometria.line([2,3], marker=Neumann_bottom)       # 2
 geometria.line([3,4], marker=Dirich_right)    # 3
-geometria.line([4,5], marker=Dirich_top)       # 4
-geometria.line([5,6], marker=Dirich_top)       # 5
-geometria.line([6,7], marker=Dirich_top)       # 6
+geometria.line([4,5], marker=Neumann_top)       # 4
+geometria.line([5,6], marker=Neumann_top)       # 5
+geometria.line([6,7], marker=Neumann_top)       # 6
 geometria.line([7,0], marker=Dirich_left)    # 7
 
 # superficies
@@ -81,12 +81,12 @@ plt.yticks(fontsize=20)
 """ Identificación de las diferentes fronteras """
 BDirl = np.asarray(bdofs[Dirich_left]) - 1
 BDirr = np.asarray(bdofs[Dirich_right]) - 1
-BDirb = np.asarray(bdofs[Dirich_bottom]) - 1
-BDirb = np.setdiff1d(BDirb, [0,3])
-BDirt = np.asarray(bdofs[Dirich_top]) - 1
-BDirt = np.setdiff1d(BDirt, [4,7])
+BNeub = np.asarray(bdofs[Neumann_bottom]) - 1
+BNeub = np.setdiff1d(BNeub, [0,3])
+BNeut = np.asarray(bdofs[Neumann_top]) - 1
+BNeut = np.setdiff1d(BNeut, [4,7])
 
-fronteras = (BDirl, BDirr, BDirb, BDirt)
+fronteras = (BDirl, BDirr, BNeub, BNeut)
 interiores = np.setdiff1d(np.arange(coords.shape[0]) , np.hstack(fronteras))
 etiquetas = (
     "Dirichlet Izquierda",
@@ -95,24 +95,24 @@ etiquetas = (
     "Dirichlet Superior"
 )
 
-from graficas import nodos_por_color
-plt.figure(figsize=(30,8))
-nodos_por_color(
-    boundaries=fronteras,
-    p=coords,
-    labels=etiquetas,
-    interior=interiores,
-    label_interior="Nodos Interiores"
-)
+# from graficas import nodos_por_color
+# plt.figure(figsize=(30,8))
+# nodos_por_color(
+#     boundaries=fronteras,
+#     p=coords,
+#     labels=etiquetas,
+#     interior=interiores,
+#     label_interior="Nodos Interiores"
+# )
 
 """ Parámetros del problema """
 L = np.array([0,0,0,2,0,2])
 k0 = lambda p: 1
-f = lambda p: 0.002
+f = lambda p: 0
 ul = lambda p: 1 + 0.25 * np.sin(np.pi * p[1]/25)
 ur = lambda p: 0
-ub = lambda p: 1 - p[0]/100
-ut = lambda p: 1/80 * (130 - p[0])
+ub = lambda p: 0
+ut = lambda p: 0
 
 materials = {}
 materials["0"] = [k0, interiores]
@@ -120,10 +120,11 @@ materials["0"] = [k0, interiores]
 dirichlet_boundaries = {}
 dirichlet_boundaries["left"] = [BDirl, ul]
 dirichlet_boundaries["right"] = [BDirr, ur]
-dirichlet_boundaries["bottom"] = [BDirb, ub]
-dirichlet_boundaries["top"] = [BDirt, ut]
 
 neumann_boundaries = {}
+neumann_boundaries["bottom"] = [k0, BNeub, ub]
+neumann_boundaries["top"] = [k0, BNeut, ut]
+
 
 
 from GFDM import create_system_K_F
@@ -165,7 +166,7 @@ ax.plot_trisurf(
     linewidth=1,
     antialiased=False
 )
-ax.view_init(azim=-60, elev=20)
+ax.view_init(azim=-60, elev=50)
 
 plt.title("Solución (3D)")
 ax.set_xlabel("$x$")
