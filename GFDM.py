@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import sparse as sp
 
 def support_nodes(i,triangles):
     temp =  np.any( np.isin(triangles,i), axis=1)
@@ -50,8 +51,8 @@ def create_system_K_F(
     """
 
     N = p.shape[0]
-    K = np.zeros((N,N))
-    F = np.zeros((N,))
+    K = sp.lil_matrix((N,N))
+    F = sp.lil_matrix((N,1))
 
     # Interior nodes
     for material in materials:
@@ -70,8 +71,8 @@ def create_system_K_F(
                 deltas_y**2
             ))
             Gamma = np.linalg.pinv(M) @ (k(p[i])*L)
-            K[i,I] += Gamma
-            F[i] += source(p[i])
+            K[i,I] = Gamma
+            F[i] = source(p[i])
 
     # Neumman boundaries
     for boundary in neumann_boundaries:
@@ -110,7 +111,7 @@ def create_system_K_F(
             Gamma_n = Gamma_n[1:]
             Gg = Gamma_ghost / Gamma_n_ghost
             K[i,I] += Gamma - Gg * Gamma_n
-            F[i] += source(p[i]) - Gg * u_n(p[i])
+            F[i] = source(p[i]) - Gg * u_n(p[i])
                 
                 
 
@@ -124,6 +125,8 @@ def create_system_K_F(
             K[:,i] = 0
             K[i,i] = 1
 
+    K = sp.csr_matrix(K)
+    F = sp.csr_matrix(F)
+    U = sp.linalg.spsolve(K,F)
 
-
-    return K,F
+    return K,F,U

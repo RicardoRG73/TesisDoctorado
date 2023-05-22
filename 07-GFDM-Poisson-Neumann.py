@@ -1,5 +1,6 @@
 """ Librerías necesarias """
 import numpy as np
+from scipy import sparse as sp
 
 # calfem-python
 import calfem.geometry as cfg
@@ -54,7 +55,7 @@ mesh = cfm.GmshMesh(geometria)
 
 mesh.el_type = 2                            # type of element: 2 = triangle
 mesh.dofs_per_node = 1
-mesh.el_size_factor = 2
+mesh.el_size_factor = 1
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()   # create the geometry
 verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
@@ -108,7 +109,7 @@ etiquetas = (
 """ Parámetros del problema """
 L = np.array([0,0,0,2,0,2])
 k0 = lambda p: 1
-f = lambda p: 0
+f = lambda p:  0 #-0.001
 ul = lambda p: 1 + 0.25 * np.sin(np.pi * p[1]/25)
 ur = lambda p: 0
 ub = lambda p: 0
@@ -128,7 +129,7 @@ neumann_boundaries["top"] = [k0, BNeut, ut]
 
 
 from GFDM import create_system_K_F
-K, F = create_system_K_F(
+K, F, U = create_system_K_F(
     p=coords,
     triangles=faces,
     L=L,
@@ -138,8 +139,6 @@ K, F = create_system_K_F(
     dirichlet_boundaries=dirichlet_boundaries,
     interfaces={}
 )
-
-U = np.linalg.solve(K,F)
 
 fig = plt.figure(figsize=(16,8))
 plt.tricontourf(
