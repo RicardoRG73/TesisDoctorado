@@ -55,7 +55,7 @@ mesh = cfm.GmshMesh(geometria)
 
 mesh.el_type = 2                            # type of element: 2 = triangle
 mesh.dofs_per_node = 1
-mesh.el_size_factor = 1
+mesh.el_size_factor = 2
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()   # create the geometry
 verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
@@ -96,15 +96,16 @@ etiquetas = (
     "Dirichlet Superior"
 )
 
-# from graficas import nodos_por_color
-# plt.figure(figsize=(30,8))
-# nodos_por_color(
-#     boundaries=fronteras,
-#     p=coords,
-#     labels=etiquetas,
-#     interior=interiores,
-#     label_interior="Nodos Interiores"
-# )
+from graficas import nodos_por_color
+plt.figure(figsize=(30,8))
+nodos_por_color(
+    boundaries=fronteras,
+    p=coords,
+    labels=etiquetas,
+    interior=interiores,
+    label_interior="Nodos Interiores",
+    alpha=1
+)
 
 """ Parámetros del problema """
 L = np.array([0,0,0,2,0,2])
