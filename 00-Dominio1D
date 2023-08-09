@@ -20,6 +20,9 @@ plt.text(x=x[N//2], y=delta, s=r"$x_i$", horizontalalignment="center")
 plt.text(x=x[N//2+1], y=delta, s=r"$x_{i+1}$", ha="center")
 plt.text(x=x[N//2-1], y=delta, s=r"$x_{i-1}$", ha="center")
 
+plt.text(x=0, y=-delta, s=r'$x_0=a$\\$x_0=0$', ha='center', color='tab:purple', fontdict={'fontsize': 30})
+plt.text(x=1, y=-delta, s=r'$x_{N+1}=b$\\$x_{N+1}=1$', ha='center', color='tab:purple', fontdict={'fontsize': 30})
+
 # longitud h
 puntos_h = np.vstack((np.array([x[N//2], x[N//2+1]]), -delta*np.array([1, 1])))
 plt.plot(puntos_h[0], puntos_h[1], marker="o", color="tab:green")
