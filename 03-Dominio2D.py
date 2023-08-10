@@ -28,6 +28,13 @@ for i in range(X.shape[0]):
 for i in range(Y.shape[0]):
     plt.plot(X, Y[i]+X*0, marker='o', color="tab:blue")
 
+# Grafica de las longitudes L y H
+delta = 0.1
+plt.plot([a0, b0], (b1+delta)*np.ones(2), marker=r'o', markersize=10, color='tab:green')
+plt.text(np.mean([a0, b0]), b1+1.2*delta, s='L', color='tab:green', fontdict={'fontsize': 25})
+plt.plot((b0+delta)*np.ones(2), [a1, b1], marker=r'o', markersize=10, color='tab:green')
+plt.text(b0+1.2*delta, np.mean([a1, b1]), s='H', color='tab:green', fontdict={'fontsize': 25})
+
 plt.xlabel("$x$")
 plt.ylabel("$y$")
 
