@@ -107,6 +107,7 @@ nodos_por_color(
     label_interior="Nodos Interiores",
     alpha=1
 )
+plt.axis('equal')
 
 """ Parámetros del problema """
 L = np.array([0,0,0,2,0,2])

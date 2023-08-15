@@ -158,7 +158,7 @@ plt.tricontourf(
     p[:,0],
     p[:,1],
     U,
-    levels=20,
+    levels=30,
     cmap=mapa_de_color,
 )
 plt.colorbar()

@@ -88,7 +88,7 @@ def create_system_K_F(
             deltas_y = p[I,1] - p[i,1]
             ghost = np.array([-np.mean(deltas_x), -np.mean(deltas_y)])
             dot_ghost_n = ghost @ ni
-            ghost_x, ghost_y = dot_ghost_n * ghost
+            ghost_x, ghost_y = dot_ghost_n * ni
 
             deltas_x = np.hstack((ghost_x, deltas_x))
             deltas_y = np.hstack((ghost_y, deltas_y))
