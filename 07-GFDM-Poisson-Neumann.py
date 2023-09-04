@@ -1,3 +1,4 @@
+#%%
 """ Librerías necesarias """
 import numpy as np
 from scipy import sparse as sp
@@ -176,3 +177,4 @@ ax.set_ylabel("$y$")
 ax.set_zlabel("$u(x,y)$")
 
 plt.show()
+# %%
