@@ -313,17 +313,17 @@ F = np.hstack((
 
 fun = lambda t,U: A@U + B(U) + F
 
-Psi0 = np.zeros(N)
-Psi0[bl] = Psil(coords[bl])
-Psi0[br] = Psir(coords[br])
-Psi0[bb] = Psib(coords[bb])
-Psi0[bt] = Psit(coords[bt])
+Psi0 = coords[:,1]
+Psi0[bl] = Psil(coords[bl,:])
+Psi0[br] = Psir(coords[br,:])
+Psi0[bb] = Psib(coords[bb,:])
+Psi0[bt] = Psit(coords[bt,:])
 
-C0 = np.zeros(N)
-C0[bl] = Cl(coords[bl])
-C0[br] = Cr(coords[br])
-C0[bb] = Cb(coords[bb])
-C0[bt] = Ct(coords[bt])
+C0 = coords[:,0] / 2
+C0[bl] = Cl(coords[bl,:])
+C0[br] = Cr(coords[br,:])
+C0[bb] = Cb(coords[bb,:])
+C0[bt] = Ct(coords[bt,:])
 
 U0 = np.hstack((Psi0, C0))
 
