@@ -6,7 +6,7 @@ u_0 = 1
 alpha = 2
 u_exact = lambda t: u_0 * np.exp(alpha * t)
 
-N = 11
+N = 101
 intervalo = [0, 1]
 t = np.linspace(
     intervalo[0],
@@ -40,5 +40,5 @@ print("Norma 2 = ", np.linalg.norm(errores[:,3]))
 
 plt.legend()
 plt.title("Método de Euler hacia adelante 1D")
-plt.savefig('figuras/09-Euler1D.png')
+# plt.savefig('figuras/09-Euler1D.png')
 plt.show()

@@ -43,7 +43,7 @@ mat0 = 0
 geometria.surface([0,1,2,3], marker=mat0)
 
 # gráfica de la geometría
-cfv.figure(fig_size=(16,5))
+cfv.figure(fig_size=(8,5))
 cfv.title('Geometría', fontdict={"fontsize": 32})
 cfv.draw_geometry(geometria, font_size=16, draw_axis=True)
 plt.xticks(fontsize=20)
@@ -69,7 +69,7 @@ verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
 )
 
 # gráfica de la malla
-cfv.figure(fig_size=(16,5))
+cfv.figure(fig_size=(8,5))
 cfv.title('Malla', fontdict={"fontsize": 32})
 cfv.draw_mesh(
     coords=coords,
@@ -98,7 +98,7 @@ bb = np.asarray(bdofs[bottom]) - 1
 bt = np.asarray(bdofs[top]) - 1
 
 fronteras = (bl, br, bb, bt)
-B = np.hstack(fronteras)
+Boundaries = np.hstack(fronteras)
 interiores = np.setdiff1d(np.arange(coords.shape[0]) , np.hstack(fronteras))
 etiquetas = (
     "Frontera Izquierda",
@@ -115,7 +115,8 @@ nodos_por_color(
     labels=etiquetas,
     interior=interiores,
     label_interior="Nodos Interiores",
-    alpha=1
+    alpha=1,
+    nums=True
 )
 plt.axis('equal')
 
@@ -190,6 +191,13 @@ D2_Psi, F2_Psi, _ = create_system_K_F(
 """
 Matrices D para la concentración C
 """
+# bl = np.asarray(bdofs[left]) - 1
+# br = np.asarray(bdofs[right]) - 1
+# bb = np.asarray(bdofs[bottom]) - 1
+# bb = np.setdiff1d(bb, [0,1])
+# bt = np.asarray(bdofs[top]) - 1
+# bt = np.setdiff1d(bt, [2,3])
+
 # Condicinoes de frontera
 Cl = lambda p: 0      # Dirichlet
 Cr = lambda p: 1      # Dirichlet
@@ -259,24 +267,24 @@ F2_C = F2_C.toarray()[:,0]
 Ensamble del problema de valor inicial
 du/dt = fun(u,t)
 """
-# Modificaciones odificadas para no afectar las fronteras
+# Modificaciones para no afectar las fronteras
 Dx_C_Psi = Dx_C.copy()
-Dx_C_Psi[B,:] = 0
+Dx_C_Psi[Boundaries,:] = 0
 
 Fx_C_Psi = Fx_C.copy()
-Fx_C_Psi[B] = 0
+Fx_C_Psi[Boundaries] = 0
 
 Dy_Psi_C = Dy_Psi.copy()
-Dy_Psi_C[B,:] = 0
+Dy_Psi_C[Boundaries,:] = 0
 
 Fy_Psi_C = Fy_Psi.copy()
-Fy_Psi_C[B] = 0
+Fy_Psi_C[Boundaries] = 0
 
 Dx_Psi_C = Dx_Psi
-Dx_Psi_C[B,:] = 0
+Dx_Psi_C[Boundaries,:] = 0
 
 Fx_Psi_C = Fx_Psi.copy()
-Fx_Psi_C[B] = 0
+Fx_Psi_C[Boundaries] = 0
 
 # Parte lineal del sistema: matriz A
 N = coords.shape[0]
@@ -299,8 +307,8 @@ def B(U):
 
 # valores conocidos del sistema: F
 F = np.hstack((
-    F2_Psi - 1/a * Fx_C_Psi,
-    -1/b*( Fy_Psi_C * Fx_C - Fx_Psi_C * Fy_C )
+    -F2_Psi + 1/a * Fx_C_Psi,
+    -F2_C-1/b*( Fy_Psi_C * Fx_C - Fx_Psi_C * Fy_C )
 ))
 
 fun = lambda t,U: A@U + B(U) + F
@@ -322,5 +330,71 @@ U0 = np.hstack((Psi0, C0))
 from scipy.integrate import solve_ivp
 sol = solve_ivp(fun=fun, t_span=[0,1.27], y0=U0)
 
+U = sol.y
+Psi = U[0:N,:]
+C = U[N:2*N,:]
 
+#%%
+index = -1
+fig = plt.figure(layout='constrained', figsize=(16,5))
+subfigs = fig.subfigures(1,2, wspace=0.07)
+ax0 = subfigs[0].subplots(1,1)
+plot0 = ax0.tricontourf(
+    coords[:,0],
+    coords[:,1],
+    Psi[:,index],
+    levels=20,
+    cmap=mapa_de_color,
+)
+# ax0.tricontour(
+#     coords[:,0],
+#     coords[:,1],
+#     Psi[:,index],
+#     levels=20,
+#     color="k"
+# )
+# ax0.quiver(
+#     coords[:,0],
+#     coords[:,1],
+#     Dy_Psi@Psi[:,index],
+#     -Dx_Psi@Psi[:,index],
+#     color="k"
+# )
+ax0.axis("equal")
+ax0.set_xlabel('$x$')
+ax0.set_ylabel('$y$')
+subfigs[0].suptitle("$\Psi$")
+
+ax1 = subfigs[1].subplots(1,1)
+plot1 = ax1.tricontourf(
+    coords[:,0],
+    coords[:,1],
+    C[:,index],
+    levels=20,
+    cmap=mapa_de_color,
+)
+ax1.axis("equal")
+ax1.set_xlabel('$x$')
+ax1.set_ylabel('$y$')
+subfigs[1].suptitle("$C$")
+
+fig.colorbar(plot0)
+fig.colorbar(plot1)
+fig.suptitle("$t=$"+str(np.round(sol.t[index],4)))
+# %%
+
+plt.style.use("paper3dplot.mplstyle")
+fig = plt.figure(figsize=(10,8))
+ax = plt.axes(projection="3d")
+ax.plot_trisurf(
+    coords[:,0],
+    coords[:,1],
+    C[:,-1],
+    cmap=mapa_de_color,
+    linewidth=1,
+    edgecolor='k',
+    antialiased=False
+)
+ax.view_init(azim=120, elev=30)
+plt.show()
 # %%
