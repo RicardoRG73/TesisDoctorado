@@ -23,8 +23,8 @@ geometria = cfg.Geometry()
 
 # puntos
 geometria.point([0,0])      # 0
-geometria.point([2,0])     # 1
-geometria.point([2,1])     # 2
+geometria.point([3,0])     # 1
+geometria.point([3,1])     # 2
 geometria.point([0,1])    # 3
 
 # líneas
@@ -80,3 +80,51 @@ cfv.draw_mesh(
 )
 plt.xticks(fontsize=20)
 plt.yticks(fontsize=20)
+
+
+"""
+Identificación de los nodos de frontera
+bl: left
+br: right
+bb: bottom
+bt: top
+"""
+
+bl = np.asarray(bdofs[left]) - 1
+bl = np.setdiff1d(bl, [0,3])
+br = np.asarray(bdofs[right]) - 1
+br = np.setdiff1d(br, [1,2])
+bb = np.asarray(bdofs[bottom]) - 1
+bb = np.setdiff1d(bb, [0,1])
+bt = np.asarray(bdofs[top]) - 1
+bt = np.setdiff1d(bt, [2,3])
+esquinas = np.array([0,1,2,3])
+
+fronteras = (bl, br, bb, bt, esquinas)
+Boundaries = np.hstack(fronteras)
+interiores = np.setdiff1d(np.arange(coords.shape[0]) , np.hstack(fronteras))
+etiquetas = (
+    "Frontera Izquierda",
+    "Frontera Derecha",
+    "Frontera Inferior",
+    "Frontera Superior",
+    "Esquinas"
+)
+
+from graficas import nodos_por_color
+plt.figure(figsize=(16,8))
+nodos_por_color(
+    boundaries=fronteras,
+    p=coords,
+    labels=etiquetas,
+    interior=interiores,
+    label_interior="Nodos Interiores",
+    alpha=0.5,
+    nums=True,
+    loc='center'
+)
+plt.axis('equal')
+
+
+plt.show()
+# %%

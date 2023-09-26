@@ -1,7 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def nodos_por_color(boundaries, p, labels=[], interior=[], label_interior="", alpha=1, nums=False, titulo="Fronteras por color"):
+def nodos_por_color(
+        boundaries,
+        p,
+        labels=[],
+        interior=[],
+        label_interior="",
+        alpha=1,
+        nums=False,
+        titulo="Fronteras por color",
+        loc='best'
+    ):
     plt.scatter(p[interior,0], p[interior,1], label=label_interior, alpha=alpha)
     i = 0
     for b in boundaries:
@@ -10,5 +20,5 @@ def nodos_por_color(boundaries, p, labels=[], interior=[], label_interior="", al
     if nums:
         for i in range(p.shape[0]):
             plt.text(x=p[i,0], y=p[i,1], s=str(i), fontdict={"fontsize": 10})
-    plt.legend()
+    plt.legend(loc=loc)
     plt.title(titulo)
