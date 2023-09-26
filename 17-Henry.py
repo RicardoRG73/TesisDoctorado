@@ -95,16 +95,20 @@ bl = np.setdiff1d(bl, [0,3])
 br = np.asarray(bdofs[right]) - 1
 br = np.setdiff1d(br, [1,2])
 bb = np.asarray(bdofs[bottom]) - 1
+bb = np.setdiff1d(bb, [0,1])
 bt = np.asarray(bdofs[top]) - 1
+bt = np.setdiff1d(bt, [2,3])
+esquinas = np.array([0,1,2,3])
 
-fronteras = (bl, br, bb, bt)
+fronteras = (bl, br, bb, bt, esquinas)
 Boundaries = np.hstack(fronteras)
 interiores = np.setdiff1d(np.arange(coords.shape[0]) , np.hstack(fronteras))
 etiquetas = (
     "Frontera Izquierda",
     "Frontera Derecha",
     "Frontera Inferior",
-    "Frontera Superior"
+    "Frontera Superior",
+    "Esquinas"
 )
 
 from graficas import nodos_por_color
@@ -115,7 +119,7 @@ nodos_por_color(
     labels=etiquetas,
     interior=interiores,
     label_interior="Nodos Interiores",
-    alpha=1,
+    alpha=0.5,
     nums=True
 )
 plt.axis('equal')
@@ -148,6 +152,8 @@ neumann_boundaries["right"] = [k, br, Psir]
 dirichlet_boundaries = {}
 dirichlet_boundaries["bottom"] = [bb, Psib]
 dirichlet_boundaries["top"] = [bt, Psit]
+dirichlet_boundaries["esquinas"] = [esquinas, lambda p: p[1]]
+
 
 # Vectores de coeficientes L
 Lx = np.array([0,1,0,0,0,0])
@@ -210,6 +216,7 @@ materials["0"] = [k, interiores]
 dirichlet_boundaries = {}
 dirichlet_boundaries["left"] = [bl, Cl]
 dirichlet_boundaries["right"] = [br, Cr]
+dirichlet_boundaries["esquinas"] = [esquinas, lambda p: p[0]/2]
 
 neumann_boundaries = {}
 neumann_boundaries["bottom"] = [k, bb, Cb]
@@ -313,17 +320,11 @@ F = np.hstack((
 
 fun = lambda t,U: A@U + B(U) + F
 
-Psi0 = coords[:,1]
-Psi0[bl] = Psil(coords[bl,:])
-Psi0[br] = Psir(coords[br,:])
-Psi0[bb] = Psib(coords[bb,:])
-Psi0[bt] = Psit(coords[bt,:])
+Psi0 = np.zeros(N)
+Psi0[Boundaries] = coords[Boundaries,1]
 
-C0 = coords[:,0] / 2
-C0[bl] = Cl(coords[bl,:])
-C0[br] = Cr(coords[br,:])
-C0[bb] = Cb(coords[bb,:])
-C0[bt] = Ct(coords[bt,:])
+C0 = np.zeros(N)
+C0[Boundaries] = coords[Boundaries,0] / 2
 
 U0 = np.hstack((Psi0, C0))
 
@@ -389,7 +390,7 @@ ax = plt.axes(projection="3d")
 ax.plot_trisurf(
     coords[:,0],
     coords[:,1],
-    C[:,-1],
+    C[:,index],
     cmap=mapa_de_color,
     linewidth=1,
     edgecolor='k',
