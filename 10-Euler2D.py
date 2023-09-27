@@ -58,7 +58,7 @@ mesh = cfm.GmshMesh(geometria)
 
 mesh.el_type = 2                            # type of element: 2 = triangle
 mesh.dofs_per_node = 1
-mesh.el_size_factor = 0.1
+mesh.el_size_factor = 0.2
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()   # create the geometry
 verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
@@ -102,7 +102,7 @@ esquinas = np.array([0,1,2,3])
 
 fronteras = (bl, br, bb, bt, esquinas)
 Boundaries = np.hstack(fronteras)
-interiores = np.setdiff1d(np.arange(coords.shape[0]) , np.hstack(fronteras))
+interiores = np.setdiff1d(np.arange(coords.shape[0]) , Boundaries)
 etiquetas = (
     "Frontera Izquierda",
     "Frontera Derecha",
@@ -125,6 +125,83 @@ nodos_por_color(
 )
 plt.axis('equal')
 
+# %%
+"""
+Parámetros del problema
+"""
+k = lambda p: 1
+f = lambda p:  0
+L = np.array([0,0,0,2,0,2])
+
+# Condicinoes de frontera
+ul = lambda p: 1
+ur = lambda p: 0
+ub = lambda p: 0
+ut = lambda p: 0
+
+# Ensamble de las condiciones en los diferentes diccionarios
+materials = {}
+materials["0"] = [k, interiores]
+
+neumann_boundaries = {}
+neumann_boundaries["bottom"] = [k, bb, ub]
+neumann_boundaries["top"] = [k, bt, ut]
+
+dirichlet_boundaries = {}
+dirichlet_boundaries["left"] = [bl, ul]
+dirichlet_boundaries["right"] = [br, ur]
+dirichlet_boundaries["esquinas"] = [esquinas, lambda p: 1-p[0]/3]
+
+# Ensamble y solución del sistema
+from GFDM import create_system_K_F
+D2, F2, _ = create_system_K_F(
+    p=coords,
+    triangles=faces,
+    L=L,
+    source=f,
+    materials=materials,
+    neumann_boundaries=neumann_boundaries,
+    dirichlet_boundaries=dirichlet_boundaries,
+    interfaces={}
+)
+F2 = F2.toarray()[:,0]
+
+dt = 0.0001
+T = 1.5
+pasos = int(np.round(T/dt,0))
+t = np.linspace(0,T,pasos)
+
+U = np.zeros((F2.shape[0], pasos))
+U0 = np.zeros(F2.shape[0])
+U0[Boundaries] = 1 - coords[Boundaries,0]/3
+U[:,0] = U0
+I = np.eye(D2.shape[0])
+A = I + dt*D2
+for i in range(pasos-1):
+    U[:,i+1] = A@U[:,i] - dt*F2
+
+
+#%%
+index = -1
+fig = plt.figure(layout='constrained', figsize=(16,5))
+subfigs = fig.subfigures(1,2, wspace=0.07)
+ax0 = subfigs[0].subplots(1,1)
+plot0 = ax0.tricontourf(
+    coords[:,0],
+    coords[:,1],
+    U[:,index],
+    levels=20,
+    cmap=mapa_de_color,
+)
+ax0.axis("equal")
+ax0.set_xlabel('$x$')
+ax0.set_ylabel('$y$')
+subfigs[0].suptitle("$U$")
+
+
+fig.colorbar(plot0)
+
+fig.suptitle("$t=$"+str(np.round(t[index],4)))
 
 plt.show()
 # %%
