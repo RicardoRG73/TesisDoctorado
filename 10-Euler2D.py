@@ -6,8 +6,10 @@ Librerías necesarias
 
 import numpy as np
 import matplotlib.pyplot as plt
-plt.style.use(['seaborn-v0_8','paper.mplstyle'])
-plt.rcParams['text.usetex'] = False
+plt.style.use(['seaborn-v0_8','seaborn-v0_8-talk'])
+plt.rcParams['legend.frameon'] = True
+plt.rcParams['legend.shadow'] = True
+plt.rcParams['font.family'] = "serif"
 mapa_de_color = "plasma"
 
 import calfem.geometry as cfg
@@ -44,8 +46,8 @@ geometria.surface([0,1,2,3], marker=mat0)
 
 # gráfica de la geometría
 cfv.figure(fig_size=(8,5))
-cfv.title('Geometría', fontdict={"fontsize": 32})
-cfv.draw_geometry(geometria, font_size=16, draw_axis=True)
+cfv.title('Geometría')
+cfv.draw_geometry(geometria, draw_axis=True)
 plt.xticks(fontsize=20)
 plt.yticks(fontsize=20)
 
@@ -70,7 +72,7 @@ verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
 
 # gráfica de la malla
 cfv.figure(fig_size=(8,5))
-cfv.title('Malla', fontdict={"fontsize": 32})
+cfv.title('Malla')
 cfv.draw_mesh(
     coords=coords,
     edof=edof,
@@ -112,7 +114,7 @@ etiquetas = (
 )
 
 from graficas import nodos_por_color
-plt.figure(figsize=(16,8))
+plt.figure()
 nodos_por_color(
     boundaries=fronteras,
     p=coords,
@@ -134,7 +136,7 @@ f = lambda p:  0
 L = np.array([0,0,0,2,0,2])
 
 # Condicinoes de frontera
-ul = lambda p: 1
+ul = lambda p: 1 # + 0.2*np.sin(np.pi*p[1])
 ur = lambda p: 0
 ub = lambda p: 0
 ut = lambda p: 0
@@ -167,13 +169,27 @@ D2, F2, _ = create_system_K_F(
 F2 = F2.toarray()[:,0]
 
 dt = 0.0001
-T = 1.5
+T = 2
 pasos = int(np.round(T/dt,0))
 t = np.linspace(0,T,pasos)
 
 U = np.zeros((F2.shape[0], pasos))
 U0 = np.zeros(F2.shape[0])
-U0[Boundaries] = 1 - coords[Boundaries,0]/3
+for i in bl:
+    U0[i] = ul(coords[i])
+for i in br:
+    U0[i] = ur(coords[i])
+U0[bb] = 1 - coords[bb,0]/3
+U0[bt] = 1 - coords[bt,0]/3
+U0[esquinas] = 1 - coords[esquinas,0]/3
+
+fig = plt.figure()
+ax = plt.axes(projection="3d")
+ax.plot_trisurf(coords[:,0], coords[:,1], U0, cmap=mapa_de_color)
+plt.title("Condición inicial $U_0$")
+plt.xlabel("$x$")
+plt.ylabel("$y$")
+
 U[:,0] = U0
 I = np.eye(D2.shape[0])
 A = I + dt*D2
@@ -184,24 +200,36 @@ for i in range(pasos-1):
 #%%
 index = -1
 fig = plt.figure(layout='constrained', figsize=(16,5))
-subfigs = fig.subfigures(1,2, wspace=0.07)
+subfigs = fig.subfigures(1,2, wspace=0)
 ax0 = subfigs[0].subplots(1,1)
 plot0 = ax0.tricontourf(
     coords[:,0],
     coords[:,1],
     U[:,index],
     levels=20,
-    cmap=mapa_de_color,
+    cmap=mapa_de_color
 )
 ax0.axis("equal")
 ax0.set_xlabel('$x$')
 ax0.set_ylabel('$y$')
-subfigs[0].suptitle("$U$")
+subfigs[0].suptitle("Contourf")
+
+ax1 = subfigs[1].add_subplot(111, projection="3d")
+plot1 = ax1.plot_trisurf(
+    coords[:,0],
+    coords[:,1],
+    U[:,index],
+    triangles=faces,
+    cmap=mapa_de_color
+)
+ax1.set_xlabel('$x$')
+ax1.set_ylabel('$y$')
+subfigs[0].suptitle("3D")
 
 
 fig.colorbar(plot0)
-
-fig.suptitle("$t=$"+str(np.round(t[index],4)))
+fig.colorbar(plot1)
+fig.suptitle("Solución $U$ en $t=$"+str(np.round(t[index],4)))
 
 plt.show()
 # %%
