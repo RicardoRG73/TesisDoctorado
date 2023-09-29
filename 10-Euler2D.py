@@ -169,7 +169,7 @@ D2, F2, _ = create_system_K_F(
 F2 = F2.toarray()[:,0]
 
 dt = 0.0001
-T = 2
+T = 1.6
 pasos = int(np.round(T/dt,0))
 t = np.linspace(0,T,pasos)
 
@@ -230,6 +230,109 @@ subfigs[0].suptitle("3D")
 fig.colorbar(plot0)
 fig.colorbar(plot1)
 fig.suptitle("Solución $U$ en $t=$"+str(np.round(t[index],4)))
-
-plt.show()
 # %%
+guarda_figuras = False
+indices = [0,10,20,50,100,200,500,1000,2000,5000,10000,15999]
+if guarda_figuras:
+    for i in indices:
+        fig = plt.figure(layout='constrained', figsize=(16,5))
+        subfigs = fig.subfigures(1,2, wspace=0)
+        ax0 = subfigs[0].subplots(1,1)
+        plot0 = ax0.tricontourf(
+            coords[:,0],
+            coords[:,1],
+            U[:,i],
+            levels=20,
+            cmap=mapa_de_color
+        )
+        ax0.axis("equal")
+        ax0.set_xlabel('$x$')
+        ax0.set_ylabel('$y$')
+        subfigs[0].suptitle("Contourf")
+
+        ax1 = subfigs[1].add_subplot(111, projection="3d")
+        plot1 = ax1.plot_trisurf(
+            coords[:,0],
+            coords[:,1],
+            U[:,i],
+            triangles=faces,
+            cmap=mapa_de_color
+        )
+        ax1.set_xlabel('$x$')
+        ax1.set_ylabel('$y$')
+        subfigs[1].suptitle("3D")
+
+
+        fig.colorbar(plot0)
+        fig.colorbar(plot1)
+        fig.suptitle("Solución $U$ en $t=$ %1.3f" %t[i])
+        print("guardando figura con índice i=",i)
+        fig.savefig("figuras/10-Euler2D-t-%1.3f.png" %t[i])
+
+# %%
+make_video = False
+video_duracion = 30
+fps_limit = 144
+salta_graph = int(
+    np.ceil(
+        pasos / video_duracion / fps_limit
+    )
+)
+if make_video:
+    frames = []
+    import moviepy.editor as mpy
+    from moviepy.video.io.bindings import mplfig_to_npimage
+    fig = plt.figure(layout='constrained', figsize=(16,5))
+    subfigs = fig.subfigures(1,2, wspace=0)
+    ax0 = subfigs[0].subplots(1,1)
+    
+    ax0.axis("equal")
+    ax0.set_xlabel('$x$')
+    ax0.set_ylabel('$y$')
+    subfigs[0].suptitle("Contourf")
+
+    ax1 = subfigs[1].add_subplot(111, projection="3d")
+    ax1.set_xlabel('$x$')
+    ax1.set_ylabel('$y$')
+    subfigs[1].suptitle("3D")
+
+    for i in np.arange(0,U.shape[1],step=salta_graph):
+        ax0.clear()
+        ax1.clear()
+
+        plot0 = ax0.tricontourf(
+            coords[:,0],
+            coords[:,1],
+            U[:,i],
+            levels=20,
+            cmap=mapa_de_color
+        )
+
+        plot1 = ax1.plot_trisurf(
+            coords[:,0],
+            coords[:,1],
+            U[:,i],
+            triangles=faces,
+            cmap=mapa_de_color
+        )
+
+        # fig.colorbar(plot0)
+        # fig.colorbar(plot1)
+        fig.suptitle("Solución $U$ en $t=$"+str(np.round(t[i],5)))
+        
+        frames.append(mplfig_to_npimage(fig))
+        print('frame = ', i, "        t = ", np.round(t[i],5))
+
+    video_fps = len(frames) / video_duracion
+    animation = mpy.VideoClip(lambda t: frames[int(t*video_fps)], duration=video_duracion)
+    # duration es la duración del video
+    # t irá desde 0 hasta el valor dado en duration
+    # los índices de frames[i] deberán de ser enteros i=int(variable)
+    # los índices irán desde 0 hasta el tamaño de frames
+    animation.write_videofile('figuras/euler2D.mp4', fps=video_fps, verbose=False, logger=None)
+    # se puede seleccionar fps según la cantidad de frames entre duration
+    # fps = frames.shape[0] / duration
+    # puede ser este valor o uno inferior
+
+#%%
+plt.show()
