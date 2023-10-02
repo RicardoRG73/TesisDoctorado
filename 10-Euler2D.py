@@ -136,7 +136,7 @@ f = lambda p:  0
 L = np.array([0,0,0,2,0,2])
 
 # Condicinoes de frontera
-ul = lambda p: 1 # + 0.2*np.sin(np.pi*p[1])
+ul = lambda p: 1 # 1 + 0.2*np.sin(np.pi*p[1])
 ur = lambda p: 0
 ub = lambda p: 0
 ut = lambda p: 0
@@ -179,8 +179,8 @@ for i in bl:
     U0[i] = ul(coords[i])
 for i in br:
     U0[i] = ur(coords[i])
-U0[bb] = 1 - coords[bb,0]/3
-U0[bt] = 1 - coords[bt,0]/3
+U0[bb] = 0 # 1 - coords[bb,0]/3
+U0[bt] = 0 # 1 - coords[bt,0]/3
 U0[esquinas] = 1 - coords[esquinas,0]/3
 
 fig = plt.figure()
@@ -231,13 +231,14 @@ fig.colorbar(plot0)
 fig.colorbar(plot1)
 fig.suptitle("Solución $U$ en $t=$"+str(np.round(t[index],4)))
 # %%
-guarda_figuras = False
-indices = [0,10,20,50,100,200,500,1000,2000,5000,10000,15999]
+guarda_figuras = True
+indices = [0,50,200,1000,5000,15999]
 if guarda_figuras:
     for i in indices:
         fig = plt.figure(layout='constrained', figsize=(16,5))
         subfigs = fig.subfigures(1,2, wspace=0)
         ax0 = subfigs[0].subplots(1,1)
+        plt.style.context("paper3dplot.mplstyle")
         plot0 = ax0.tricontourf(
             coords[:,0],
             coords[:,1],
@@ -251,6 +252,7 @@ if guarda_figuras:
         subfigs[0].suptitle("Contourf")
 
         ax1 = subfigs[1].add_subplot(111, projection="3d")
+        plt.style.context("paper.mplstyle")
         plot1 = ax1.plot_trisurf(
             coords[:,0],
             coords[:,1],
