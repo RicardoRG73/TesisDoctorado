@@ -168,7 +168,7 @@ D2, F2, _ = create_system_K_F(
 )
 F2 = F2.toarray()[:,0]
 
-dt = 0.0001
+dt = 0.1
 T = 1.6
 pasos = int(np.round(T/dt,0))
 t = np.linspace(0,T,pasos)
@@ -190,11 +190,15 @@ plt.title("Condición inicial $U_0$")
 plt.xlabel("$x$")
 plt.ylabel("$y$")
 
+# Resolviendo con CN
 U[:,0] = U0
 I = np.eye(D2.shape[0])
-A = I + dt*D2
+D2 = D2.toarray()
+A = I - dt/2 * D2
+B = I + dt/2 * D2
 for i in range(pasos-1):
-    U[:,i+1] = A@U[:,i] - dt*F2
+    Der = B@U[:,i] - dt * F2
+    U[:,i+1] = np.linalg.solve(A,Der)
 
 
 #%%
@@ -231,8 +235,8 @@ fig.colorbar(plot0)
 fig.colorbar(plot1)
 fig.suptitle("Solución $U$ en $t=$"+str(np.round(t[index],4)))
 # %%
-guarda_figuras = True
-indices = [0,50,200,1000,5000,15999]
+guarda_figuras = False
+indices = [0,1,2,5,10,15]
 if guarda_figuras:
     for i in indices:
         fig = plt.figure(layout='constrained', figsize=(16,5))
@@ -269,12 +273,12 @@ if guarda_figuras:
         fig.colorbar(plot1)
         fig.suptitle("Solución $U$ en $t=$ %1.3f" %t[i])
         print("guardando figura con índice i=",i)
-        fig.savefig("figuras/10-Euler2D-t-%1.3f.png" %t[i])
+        fig.savefig("figuras/14-CN2D-t-%1.3f.png" %t[i])
 
 # %%
-make_video = False
-video_duracion = 30
-fps_limit = 144
+make_video = True
+video_duracion = 16
+fps_limit = 1
 salta_graph = int(
     np.ceil(
         pasos / video_duracion / fps_limit
@@ -331,7 +335,7 @@ if make_video:
     # t irá desde 0 hasta el valor dado en duration
     # los índices de frames[i] deberán de ser enteros i=int(variable)
     # los índices irán desde 0 hasta el tamaño de frames
-    animation.write_videofile('figuras/euler2D.mp4', fps=video_fps, verbose=False, logger=None)
+    animation.write_videofile('figuras/CN2D.mp4', fps=video_fps, verbose=False, logger=None)
     # se puede seleccionar fps según la cantidad de frames entre duration
     # fps = frames.shape[0] / duration
     # puede ser este valor o uno inferior

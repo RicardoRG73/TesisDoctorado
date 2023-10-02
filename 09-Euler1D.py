@@ -1,3 +1,4 @@
+#%%
 import numpy as np
 import matplotlib.pyplot as plt
 plt.style.use(["seaborn-v0_8", "paper.mplstyle"])
@@ -34,7 +35,8 @@ print(
 )
 
 errores = np.vstack((t, u_ex, u, u_ex-u)).T
-print(np.round(errores, 2))
+for i in range(errores.shape[0]):
+    print("%1.1f & %1.2f & %1.2f & %1.3f \\\\" %tuple(errores[i,:]))
 print("Norma 2 = ", np.linalg.norm(errores[:,3]))
 
 

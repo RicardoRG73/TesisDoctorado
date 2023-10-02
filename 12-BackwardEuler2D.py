@@ -190,6 +190,7 @@ plt.title("Condición inicial $U_0$")
 plt.xlabel("$x$")
 plt.ylabel("$y$")
 
+# Resolviendo con BE
 U[:,0] = U0
 I = np.eye(D2.shape[0])
 A = I - dt*D2
@@ -273,7 +274,7 @@ if guarda_figuras:
         fig.savefig("figuras/12-BE2D-t-%1.3f.png" %t[i])
 
 # %%
-make_video = False
+make_video = True
 video_duracion = 16
 fps_limit = 1
 salta_graph = int(
@@ -324,7 +325,7 @@ if make_video:
         fig.suptitle("Solución $U$ en $t=$"+str(np.round(t[i],5)))
         
         frames.append(mplfig_to_npimage(fig))
-        print('frame = ', i, "        t = ", np.round(t[i],5))
+        print("frame = %d        t = %1.4f" %(i, t[i]))
 
     video_fps = len(frames) / video_duracion
     animation = mpy.VideoClip(lambda t: frames[int(t*video_fps)], duration=video_duracion)

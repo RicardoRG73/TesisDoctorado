@@ -27,28 +27,36 @@ for i in range(N-1):
 
 plt.plot(t, u_fe, label="FE")
 
-# método BE
-u = np.zeros(N)
-u[0] = u_0
+# Método BE
+u_be = np.zeros(N)
+u_be[0] = u_0
 for i in range(N-1):
-    u[i+1] = 1 / (1 - alpha * dt) * u[i]
+    u_be[i+1] = 1 / (1 - alpha * dt) * u_be[i]
 
-plt.plot(t, u, "o", alpha=0.5, label="BE")
+plt.plot(t, u_be, "o", alpha=0.5, label="BE")
+
+# Método CN
+u_cn = np.zeros(N)
+u_cn[0] = u_0
+for i in range(N-1):
+    u_cn[i+1] = (1 + alpha * dt / 2) / (1 - alpha * dt / 2) * u_cn[i]
+
+plt.plot(t, u_cn, label="CN")
 
 print(
-    "\n\n\n Método Backward Euler \n",
+    "\n\n\n Método Crank-Nicolson \n",
     "---\n",
     "t, u_ex, u_num, u_ex - u_num\n",
     "---",
 )
 
-errores = np.vstack((t, u_ex, u, u_ex-u)).T
+errores = np.vstack((t, u_ex, u_cn, u_ex-u_cn)).T
 for i in range(errores.shape[0]):
     print("%1.1f & %1.2f & %1.2f & %1.3f \\\\" %tuple(errores[i,:]))
-print("Norma 2 = ", np.linalg.norm(errores[:,3]))
-
+print("Norma 2 = %1.4f" %np.linalg.norm(errores[:,3]))
 
 plt.legend()
-plt.title("Método de Euler hacia atrás 1D")
-plt.savefig('figuras/11-BE1D.png')
+plt.title("Método Crank-Nicolson 1D")
+plt.savefig('figuras/13-CN1D.png')
 plt.show()
+# %%
