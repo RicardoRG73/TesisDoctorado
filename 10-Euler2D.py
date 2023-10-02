@@ -231,7 +231,7 @@ fig.colorbar(plot0)
 fig.colorbar(plot1)
 fig.suptitle("Solución $U$ en $t=$"+str(np.round(t[index],4)))
 # %%
-guarda_figuras = True
+guarda_figuras = False
 indices = [0,50,200,1000,5000,15999]
 if guarda_figuras:
     for i in indices:
