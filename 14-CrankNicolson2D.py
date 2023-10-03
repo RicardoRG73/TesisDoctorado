@@ -167,6 +167,7 @@ D2, F2, _ = create_system_K_F(
     interfaces={}
 )
 F2 = F2.toarray()[:,0]
+D2 = D2.toarray()
 
 dt = 0.1
 T = 1.6
@@ -193,7 +194,6 @@ plt.ylabel("$y$")
 # Resolviendo con CN
 U[:,0] = U0
 I = np.eye(D2.shape[0])
-D2 = D2.toarray()
 A = I - dt/2 * D2
 B = I + dt/2 * D2
 for i in range(pasos-1):
