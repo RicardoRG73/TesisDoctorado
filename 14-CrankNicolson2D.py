@@ -276,7 +276,7 @@ if guarda_figuras:
         fig.savefig("figuras/14-CN2D-t-%1.3f.png" %t[i])
 
 # %%
-make_video = True
+make_video = False
 video_duracion = 16
 fps_limit = 1
 salta_graph = int(
