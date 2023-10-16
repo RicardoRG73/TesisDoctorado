@@ -156,7 +156,7 @@ dirichlet_boundaries["esquinas"] = [esquinas, lambda p: 1-p[0]/3]
 
 # Ensamble y solución del sistema
 from GFDM import create_system_K_F
-D2, F2, _ = create_system_K_F(
+D2, F2 = create_system_K_F(
     p=coords,
     triangles=faces,
     L=L,

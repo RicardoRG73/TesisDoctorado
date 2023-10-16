@@ -156,7 +156,7 @@ dirichlet_boundaries["esquinas"] = [esquinas, lambda p: 1-p[0]/3]
 
 # Ensamble y solución del sistema
 from GFDM import create_system_K_F
-D2, F2, _ = create_system_K_F(
+D2, F2 = create_system_K_F(
     p=coords,
     triangles=faces,
     L=L,
@@ -231,7 +231,7 @@ fig.colorbar(plot0)
 fig.colorbar(plot1)
 fig.suptitle("Solución $U$ en $t=$"+str(np.round(t[index],4)))
 # %%
-guarda_figuras = True
+guarda_figuras = False
 indices = [0,50,200,1000,5000,15999]
 if guarda_figuras:
     for i in indices:

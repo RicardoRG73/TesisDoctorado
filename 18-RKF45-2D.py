@@ -156,7 +156,7 @@ dirichlet_boundaries["esquinas"] = [esquinas, lambda p: 1-p[0]/3]
 
 # Ensamble y solución del sistema
 from GFDM import create_system_K_F
-D2, F2, _ = create_system_K_F(
+D2, F2 = create_system_K_F(
     p=coords,
     triangles=faces,
     L=L,
@@ -187,10 +187,10 @@ plt.ylabel("$y$")
 
 # Resolviendo con RKF45
 from scipy.integrate import solve_ivp
-f = lambda t,u: D2@u - F2
+fun = lambda t,u: D2@u - F2
 T = 1.6
 tspan = [0,T]
-sol = solve_ivp(f, tspan, U0)
+sol = solve_ivp(fun, tspan, U0)
 
 U = sol.y
 t = sol.t

@@ -6,14 +6,20 @@ Librerías necesarias
 
 import numpy as np
 import matplotlib.pyplot as plt
-plt.style.use(['seaborn-v0_8','paper.mplstyle'])
-plt.rcParams['text.usetex'] = False
+from scipy.integrate import solve_ivp
+
+plt.style.use(["seaborn-v0_8-darkgrid", "seaborn-v0_8-colorblind", "seaborn-v0_8-paper"])
+plt.rcParams["legend.frameon"] = True
+plt.rcParams["legend.shadow"] = True
+plt.rcParams["legend.framealpha"] = 0.6
 mapa_de_color = "plasma"
 
 import calfem.geometry as cfg
 import calfem.mesh as cfm
 import calfem.vis_mpl as cfv
 
+from graficas import nodos_por_color
+from GFDM import create_system_K_F
 
 """
 Geometría
@@ -23,9 +29,9 @@ geometria = cfg.Geometry()
 
 # puntos
 geometria.point([0,0])      # 0
-geometria.point([2,0])     # 1
-geometria.point([2,1])     # 2
-geometria.point([0,1])    # 3
+geometria.point([2,0])      # 1
+geometria.point([2,1])      # 2
+geometria.point([0,1])      # 3
 
 # líneas
 left = 10
@@ -33,10 +39,10 @@ right = 11
 top = 12
 bottom = 13
 
-geometria.line([0,1], marker=bottom)       # 0
-geometria.line([1,2], marker=right)       # 1
+geometria.line([0,1], marker=bottom)    # 0
+geometria.line([1,2], marker=right)     # 1
 geometria.line([2,3], marker=top)       # 2
-geometria.line([3,0], marker=left)    # 3
+geometria.line([3,0], marker=left)      # 3
 
 # superficies
 mat0 = 0
@@ -111,7 +117,6 @@ etiquetas = (
     "Esquinas"
 )
 
-from graficas import nodos_por_color
 plt.figure(figsize=(16,8))
 nodos_por_color(
     boundaries=fronteras,
@@ -119,283 +124,334 @@ nodos_por_color(
     labels=etiquetas,
     interior=interiores,
     label_interior="Nodos Interiores",
-    alpha=0.5,
-    nums=True
+    alpha=1,
+    nums=True,
+    legend=False
 )
 plt.axis('equal')
 
-
+#%%
 """
 Parámetros del problema
 """
 a = 0.2637
 b = 0.1
-k = lambda p: 1
-f = lambda p:  0
+k = lambda p: 1         # difusividad
+f = lambda p: 0         # fuente
 
 """
 Matrices D para la función de flujo \Psi
 """
-# Condicinoes de frontera
-Psil = lambda p: 0      # Neumann
-Psir = lambda p: 0      # Neumann
-Psib = lambda p: 0      # Dirichlet
-Psit = lambda p: 1      # Dirichlet
+# Definición de las condiciones de frontera y nodos interiores
+Psit = lambda p: 1
+Psib = lambda p: 0
+Psil = lambda p: 0
+Psir = lambda p: 0
 
-materials = {}
-materials["0"] = [k, interiores]
+materiales = {}
+materiales["0"] = [k, interiores]
 
-neumann_boundaries = {}
-neumann_boundaries["left"] = [k, bl, Psil]
-neumann_boundaries["right"] = [k, br, Psir]
+fronteas_dirichlet = {}
+fronteas_dirichlet["top"] = [bt, Psit]
+fronteas_dirichlet["bottom"] = [bb, Psib]
+fronteas_dirichlet["esquinas_top"] = [[2,3], Psit]
+fronteas_dirichlet["esquinas_bottom"] = [[0,1], Psib]
 
-dirichlet_boundaries = {}
-dirichlet_boundaries["bottom"] = [bb, Psib]
-dirichlet_boundaries["top"] = [bt, Psit]
-dirichlet_boundaries["esquinas"] = [esquinas, lambda p: p[1]]
+fronteras_neumann = {}
+fronteras_neumann["left"] = [k, bl, Psil]
+fronteras_neumann["right"] = [k, br, Psir]
 
-
-# Vectores de coeficientes L
-Lx = np.array([0,1,0,0,0,0])
-Ly = np.array([0,0,1,0,0,0])
+# Ensamble de las matrices y vectores (D's y F's)
 L2 = np.array([0,0,0,2,0,2])
-
-# Ensamble de las matrices D
-from GFDM import create_system_K_F
-Dx_Psi, Fx_Psi, _ = create_system_K_F(
-    p=coords,
-    triangles=faces,
-    L=Lx,
-    source=f,
-    materials=materials,
-    neumann_boundaries=neumann_boundaries,
-    dirichlet_boundaries=dirichlet_boundaries,
-    interfaces={}
-)
-Dy_Psi, Fy_Psi, _ = create_system_K_F(
-    p=coords,
-    triangles=faces,
-    L=Ly,
-    source=f,
-    materials=materials,
-    neumann_boundaries=neumann_boundaries,
-    dirichlet_boundaries=dirichlet_boundaries,
-    interfaces={}
-)
-D2_Psi, F2_Psi, _ = create_system_K_F(
+D2psi, F2psi = create_system_K_F(
     p=coords,
     triangles=faces,
     L=L2,
     source=f,
-    materials=materials,
-    neumann_boundaries=neumann_boundaries,
-    dirichlet_boundaries=dirichlet_boundaries,
-    interfaces={}
+    materials=materiales,
+    dirichlet_boundaries=fronteas_dirichlet,
+    neumann_boundaries=fronteras_neumann
 )
+D2psi = D2psi.toarray()
+F2psi = F2psi.toarray()[:,0]
+
+Lx = np.array([0,1,0,0,0,0])
+Dxpsi, Fxpsi = create_system_K_F(
+    p=coords,
+    triangles=faces,
+    L=Lx,
+    source=f,
+    materials=materiales,
+    dirichlet_boundaries=fronteas_dirichlet,
+    neumann_boundaries=fronteras_neumann
+)
+Dxpsi = Dxpsi.toarray()
+Fxpsi = Fxpsi.toarray()[:,0]
+
+Ly = np.array([0,0,1,0,0,0])
+Dypsi, Fypsi = create_system_K_F(
+    p=coords,
+    triangles=faces,
+    L=Ly,
+    source=f,
+    materials=materiales,
+    dirichlet_boundaries=fronteas_dirichlet,
+    neumann_boundaries=fronteras_neumann
+)
+Dypsi = Dypsi.toarray()
+Fypsi = Fypsi.toarray()[:,0]
 
 
 """
 Matrices D para la concentración C
 """
-# bl = np.asarray(bdofs[left]) - 1
-# br = np.asarray(bdofs[right]) - 1
-# bb = np.asarray(bdofs[bottom]) - 1
-# bb = np.setdiff1d(bb, [0,1])
-# bt = np.asarray(bdofs[top]) - 1
-# bt = np.setdiff1d(bt, [2,3])
+# Definición de las condiciones de frontera
+Cl = lambda p: 0
+Cr = lambda p: 1
+Ct = lambda p: 0
+Cb = lambda p: 0
 
-# Condicinoes de frontera
-Cl = lambda p: 0      # Dirichlet
-Cr = lambda p: 1      # Dirichlet
-Cb = lambda p: 0      # Neumann
-Ct = lambda p: 0      # Neumann
 
-materials = {}
-materials["0"] = [k, interiores]
+fronteas_dirichlet = {}
+fronteas_dirichlet["left"] = [bl, Cl]
+fronteas_dirichlet["right"] = [br, Cr]
+fronteas_dirichlet["esquinas_left"] = [[0,3], Cl]
+fronteas_dirichlet["esquinas_right"] = [[1,2], Cr]
 
-dirichlet_boundaries = {}
-dirichlet_boundaries["left"] = [bl, Cl]
-dirichlet_boundaries["right"] = [br, Cr]
-dirichlet_boundaries["esquinas"] = [esquinas, lambda p: p[0]/2]
+fronteras_neumann = {}
+fronteras_neumann["top"] = [k, bt, Ct]
+fronteras_neumann["bottom"] = [k, bb, Cb]
 
-neumann_boundaries = {}
-neumann_boundaries["bottom"] = [k, bb, Cb]
-neumann_boundaries["top"] = [k, bt, Ct]
-
-# Ensamble de las matrices D
-Dx_C, Fx_C, _ = create_system_K_F(
-    p=coords,
-    triangles=faces,
-    L=Lx,
-    source=f,
-    materials=materials,
-    neumann_boundaries=neumann_boundaries,
-    dirichlet_boundaries=dirichlet_boundaries,
-    interfaces={}
-)
-Dy_C, Fy_C, _ = create_system_K_F(
-    p=coords,
-    triangles=faces,
-    L=Ly,
-    source=f,
-    materials=materials,
-    neumann_boundaries=neumann_boundaries,
-    dirichlet_boundaries=dirichlet_boundaries,
-    interfaces={}
-)
-D2_C, F2_C, _ = create_system_K_F(
+# Ensamble de las matrices y vectores (D's y F's)
+D2c, F2c = create_system_K_F(
     p=coords,
     triangles=faces,
     L=L2,
     source=f,
-    materials=materials,
-    neumann_boundaries=neumann_boundaries,
-    dirichlet_boundaries=dirichlet_boundaries,
-    interfaces={}
+    materials=materiales,
+    dirichlet_boundaries=fronteas_dirichlet,
+    neumann_boundaries=fronteras_neumann
 )
+D2c = D2c.toarray()
+F2c = F2c.toarray()[:,0]
+
+Dxc, Fxc = create_system_K_F(
+    p=coords,
+    triangles=faces,
+    L=Lx,
+    source=f,
+    materials=materiales,
+    dirichlet_boundaries=fronteas_dirichlet,
+    neumann_boundaries=fronteras_neumann
+)
+Dxc = Dxc.toarray()
+Fxc = Fxc.toarray()[:,0]
+
+Dyc, Fyc = create_system_K_F(
+    p=coords,
+    triangles=faces,
+    L=Ly,
+    source=f,
+    materials=materiales,
+    dirichlet_boundaries=fronteas_dirichlet,
+    neumann_boundaries=fronteras_neumann
+)
+Dyc = Dyc.toarray()
+Fyc = Fyc.toarray()[:,0]
 
 
-# Conversión de sparse matrix a array
-Dx_Psi = Dx_Psi.toarray()
-Fx_Psi = Fx_Psi.toarray()[:,0]
-Dy_Psi = Dy_Psi.toarray()
-Fy_Psi = Fy_Psi.toarray()[:,0]
-D2_Psi = D2_Psi.toarray()
-F2_Psi = F2_Psi.toarray()[:,0]
-Dx_C = Dx_C.toarray()
-Fx_C = Fx_C.toarray()[:,0]
-Dy_C = Dy_C.toarray()
-Fy_C = Fy_C.toarray()[:,0]
-D2_C = D2_C.toarray()
-F2_C = F2_C.toarray()[:,0]
-
-
-""" 
-Ensamble del problema de valor inicial
-du/dt = fun(u,t)
 """
-# Modificaciones para no afectar las fronteras
-Dx_C_Psi = Dx_C.copy()
-Dx_C_Psi[Boundaries,:] = 0
+Ensamble del IVP
+"""
+#  modificaciones para no afectar las condiciones de frontera
+Dxcpsi = Dxc.copy()
+Dxcpsi[:,Boundaries] = 0
+Dxcpsi[Boundaries,:] = 0
+Fxcpsi = Fxc.copy()
+Fxcpsi[Boundaries] = 0
 
-Fx_C_Psi = Fx_C.copy()
-Fx_C_Psi[Boundaries] = 0
+Dypsic = Dypsi.copy()
+Dypsic[:,Boundaries] = 0
+Dypsic[Boundaries,:] = 0
+Dypsic[Boundaries,Boundaries] = 1
+Fypsic = Fypsi.copy()
+Fypsic[Boundaries] = 0
 
-Dy_Psi_C = Dy_Psi.copy()
-Dy_Psi_C[Boundaries,:] = 0
+Dxpsic = Dxpsi.copy()
+Dxpsic[:,Boundaries] = 0
+Dxpsic[Boundaries,:] = 0
+Dxpsic[Boundaries,Boundaries] = 1
+Fxpsic = Fxpsi.copy()
+Fxpsic[Boundaries] = 0
 
-Fy_Psi_C = Fy_Psi.copy()
-Fy_Psi_C[Boundaries] = 0
+print("\n=============")
+print("Condition Number")
+print("--------------")
+print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
+print("|| %1.2e || %1.2e || %1.2e || %1.2e ||" %(
+        np.linalg.cond(Dxc),np.linalg.cond(Dyc),np.linalg.cond(Dxpsi),np.linalg.cond(Dypsi)
+    )
+)
+print("=============")
+# print("Max value in diag")
+# print("--------------")
+# print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
+# print("|| %1.2f || %1.2f || %1.2f || %1.2f ||" %(
+#         np.max(np.diag(Dxc)),np.max(np.diag(Dyc)),np.max(np.diag(Dxpsi)),np.max(np.diag(Dypsi))
+#     )
+# )
+# print("=============")
+# print("Min value in diag")
+# print("--------------")
+# print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
+# print("|| %1.2f || %1.2f || %1.2f || %1.2f ||" %(
+#         np.min(np.diag(Dxc)),np.min(np.diag(Dyc)),np.min(np.diag(Dxpsi)),np.min(np.diag(Dypsi))
+#     )
+# )
+# print("=============\n")
 
-Dx_Psi_C = Dx_Psi
-Dx_Psi_C[Boundaries,:] = 0
-
-Fx_Psi_C = Fx_Psi.copy()
-Fx_Psi_C[Boundaries] = 0
-
-# Parte lineal del sistema: matriz A
+# Parte lineal del sistema (matriz A)
 N = coords.shape[0]
 A = np.vstack((
-    np.hstack((D2_Psi, -1/a*Dx_C_Psi)),
-    np.hstack((np.zeros((N,N)), D2_C))
-))
-
-# Parte no lineal del sistema: vector B
-def B(U):
-    U1 = U[0:N]
-    U2 = U[N:2*N]
-    term1 = (Dy_Psi_C @ U1) * (Dx_C @ U2)
-    term2 = (Dx_Psi_C @ U1) * (Dy_C @ U2)
-    B = np.hstack((
-        np.zeros(N),
-        -1/b * (term1 - term2)
+    np.hstack((
+        D2psi, -1/a * Dxcpsi
+    )),
+    np.hstack((
+        np.zeros((N,N)), D2c
     ))
-    return B
-
-# valores conocidos del sistema: F
-F = np.hstack((
-    -F2_Psi + 1/a * Fx_C_Psi,
-    -F2_C-1/b*( Fy_Psi_C * Fx_C - Fx_Psi_C * Fy_C )
 ))
 
-fun = lambda t,U: A@U + B(U) + F
+# Valores conocidos lineales (vector Fl)
+Fl = np.hstack((
+    - F2psi  +  1/a * Fxcpsi,
+    - F2c
+))
 
-Psi0 = np.zeros(N)
-Psi0[Boundaries] = coords[Boundaries,1]
+# Parte no lineal (Vector B)
+def B(U):
+    term1 = (Dypsic@U[:N]) * (Dxc@U[N:])
+    term2 = (Dxpsic@U[:N]) * (Dyc@U[N:])
+    vec2 = -1/b * (term1 - term2) 
+    vec1 = np.zeros(N)
+    vec = np.hstack((vec1, vec2))
+    return vec
 
+# Valores conocidos no lineales (vector Fn)
+Fn = np.hstack((
+    np.zeros(N),
+    - 1/b * (Fypsic*Fxc - Fxpsic*Fyc)
+))
+
+# Acoplamiento del lado derecho en la función anónima fun
+
+fun = lambda t,U: A@U + Fl + B(U) + Fn
+
+# Condiciones iniciales
 C0 = np.zeros(N)
-C0[Boundaries] = coords[Boundaries,0] / 2
+Psi0 = np.zeros(N)
+for i in bl:
+    C0[i] = Cl(coords[i,:])
+    Psi0[i] = Psil(coords[i,:])
+for i in br:
+    C0[i] = Cr(coords[i,:])
+    Psi0[i] = Psir(coords[i,:])
+for i in bt:
+    C0[i] = Ct(coords[i,:])
+    Psi0[i] = Psit(coords[i,:])
+for i in bb:
+    C0[i] = Cb(coords[i,:])
+    Psi0[i] = Psib(coords[i,:])
+i = 0
+C0[i] = Cl(coords[i,:])
+Psi0[i] = Psib(coords[i,:])
+i = 1
+C0[i] = Cr(coords[i,:])
+Psi0[i] = Psib(coords[i,:])
+i = 2
+C0[i] = Cr(coords[i,:])
+Psi0[i] = Psit(coords[i,:])
+i = 3
+C0[i] = Cl(coords[i,:])
+Psi0[i] = Psit(coords[i,:])
+
+fig = plt.figure()
+ax = plt.subplot(1, 2, 1, projection="3d")
+ax.plot_trisurf(coords[:,0],coords[:,1],Psi0, cmap=mapa_de_color, edgecolor="k")
+ax.set_title("$\Psi_0$")
+ax2 = plt.subplot(1, 2, 2, projection="3d")
+ax2.plot_trisurf(coords[:,0],coords[:,1],C0, cmap=mapa_de_color, edgecolor="k")
+ax2.set_title("$C_0$")
 
 U0 = np.hstack((Psi0, C0))
 
-from scipy.integrate import solve_ivp
-sol = solve_ivp(fun=fun, t_span=[0,1.27], y0=U0)
+# Solución del IVP
+tspan = [0,1.6]             # intervalo de solución
+sol = solve_ivp(fun, tspan, U0, method="RK45")
 
 U = sol.y
-Psi = U[0:N,:]
-C = U[N:2*N,:]
 
-#%%
-index = -1
-fig = plt.figure(layout='constrained', figsize=(16,5))
-subfigs = fig.subfigures(1,2, wspace=0.07)
-ax0 = subfigs[0].subplots(1,1)
-plot0 = ax0.tricontourf(
-    coords[:,0],
-    coords[:,1],
-    Psi[:,index],
-    levels=20,
-    cmap=mapa_de_color,
-)
-# ax0.tricontour(
-#     coords[:,0],
-#     coords[:,1],
-#     Psi[:,index],
-#     levels=20,
-#     color="k"
-# )
-# ax0.quiver(
-#     coords[:,0],
-#     coords[:,1],
-#     Dy_Psi@Psi[:,index],
-#     -Dx_Psi@Psi[:,index],
-#     color="k"
-# )
-ax0.axis("equal")
-ax0.set_xlabel('$x$')
-ax0.set_ylabel('$y$')
-subfigs[0].suptitle("$\Psi$")
-
-ax1 = subfigs[1].subplots(1,1)
-plot1 = ax1.tricontourf(
-    coords[:,0],
-    coords[:,1],
-    C[:,index],
-    levels=20,
-    cmap=mapa_de_color,
-)
-ax1.axis("equal")
-ax1.set_xlabel('$x$')
-ax1.set_ylabel('$y$')
-subfigs[1].suptitle("$C$")
-
-fig.colorbar(plot0)
-fig.colorbar(plot1)
-fig.suptitle("$t=$"+str(np.round(sol.t[index],4)))
-# %%
-
+# Gráfica de la solución en el tiempo final
 plt.style.use("paper3dplot.mplstyle")
 fig = plt.figure(figsize=(10,8))
 ax = plt.axes(projection="3d")
 ax.plot_trisurf(
     coords[:,0],
     coords[:,1],
-    C[:,index],
+    U[:N,-1],
     cmap=mapa_de_color,
     linewidth=1,
-    edgecolor='k',
     antialiased=False
 )
-ax.view_init(azim=120, elev=30)
+ax.view_init(azim=-120, elev=50)
+plt.title("$\Psi$")
+ax.set_xlabel("$x$")
+ax.set_ylabel("$y$")
+
+fig = plt.figure(figsize=(10,8))
+ax = plt.axes(projection="3d")
+ax.plot_trisurf(
+    coords[:,0],
+    coords[:,1],
+    U[N:,-1],
+    cmap=mapa_de_color,
+    linewidth=1,
+    antialiased=False
+)
+ax.view_init(azim=-120, elev=50)
+plt.title("$C$")
+ax.set_xlabel("$x$")
+ax.set_ylabel("$y$")
+
+
+plt.style.use(["default", "seaborn-v0_8", "seaborn-v0_8-talk"])
+
+plt.figure()
+plt.tricontourf(
+    coords[:,0],
+    coords[:,1],
+    U[:N,-1],
+    levels=20,
+    cmap=mapa_de_color
+)
+plt.axis("equal")
+plt.xlabel('$x$')
+plt.ylabel('$y$')
+plt.title("$\Psi$")
+plt.colorbar()
+
+plt.figure()
+plt.tricontourf(
+    coords[:,0],
+    coords[:,1],
+    U[N:,-1],
+    levels=20,
+    cmap=mapa_de_color
+)
+plt.axis("equal")
+plt.xlabel('$x$')
+plt.ylabel('$y$')
+plt.title("$C$")
+plt.colorbar()
+
 plt.show()
 # %%

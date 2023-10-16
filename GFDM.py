@@ -127,6 +127,5 @@ def create_system_K_F(
 
     K = sp.csr_matrix(K)
     F = sp.csr_matrix(F)
-    U = sp.linalg.spsolve(K,F)
 
-    return K,F,U
+    return K,F

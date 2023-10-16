@@ -128,7 +128,7 @@ neumann_boundaries = {}
 
 
 from GFDM import create_system_K_F
-K, F, U = create_system_K_F(
+K, F = create_system_K_F(
     p=coords,
     triangles=faces,
     L=L,
@@ -138,6 +138,9 @@ K, F, U = create_system_K_F(
     dirichlet_boundaries=dirichlet_boundaries,
     interfaces={}
 )
+
+from scipy.sparse.linalg import spsolve
+U = spsolve(K,F)
 
 fig = plt.figure(figsize=(16,8))
 plt.tricontourf(
