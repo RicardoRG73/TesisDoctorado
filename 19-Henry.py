@@ -265,34 +265,35 @@ Ensamble del IVP
 """
 #  modificaciones para no afectar las condiciones de frontera
 Dxcpsi = Dxc.copy()
+Fxcpsi = Fxc.copy()
+
 Dxcpsi[:,Boundaries] = 0
 Dxcpsi[Boundaries,:] = 0
-Fxcpsi = Fxc.copy()
 Fxcpsi[Boundaries] = 0
 
 Dypsic = Dypsi.copy()
+Fypsic = Fypsi.copy()
+
 Dypsic[:,Boundaries] = 0
 Dypsic[Boundaries,:] = 0
-Dypsic[Boundaries,Boundaries] = 1
-Fypsic = Fypsi.copy()
 Fypsic[Boundaries] = 0
 
 Dxpsic = Dxpsi.copy()
+Fxpsic = Fxpsi.copy()
+
 Dxpsic[:,Boundaries] = 0
 Dxpsic[Boundaries,:] = 0
-Dxpsic[Boundaries,Boundaries] = 1
-Fxpsic = Fxpsi.copy()
 Fxpsic[Boundaries] = 0
 
-print("\n=============")
-print("Condition Number")
-print("--------------")
-print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
-print("|| %1.2e || %1.2e || %1.2e || %1.2e ||" %(
-        np.linalg.cond(Dxc),np.linalg.cond(Dyc),np.linalg.cond(Dxpsi),np.linalg.cond(Dypsi)
-    )
-)
-print("=============")
+# print("\n=============")
+# print("Condition Number")
+# print("--------------")
+# print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
+# print("|| %1.2e || %1.2e || %1.2e || %1.2e ||" %(
+#         np.linalg.cond(Dxc),np.linalg.cond(Dyc),np.linalg.cond(Dxpsi),np.linalg.cond(Dypsi)
+#     )
+# )
+# print("=============")
 # print("Max value in diag")
 # print("--------------")
 # print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
