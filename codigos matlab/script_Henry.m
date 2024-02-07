@@ -26,12 +26,12 @@ b = 0.1;
 tfin = 0.2;   % tiempo final
 f = @(x,y) 0; % fuente
 % par\'ametros para generar la malla
-m = 5; % divisiones en el eje x
-m2 = 4; % divisiones en el eje y
-mm = m*m2;
+m = 4; % nodos en el eje x
+m2 = 4; % nodos en el eje y
+N = m*m2;
 H = 1;
-H_L = 0.5; % H/L
-L = H/H_L;
+H_over_L = 0.5;
+L = H / H_over_L;
 theta = 0;
 
 %% Generaci\on de la malla
@@ -93,7 +93,7 @@ Ly = [0 0 1 0 0 0]'; % diferencia en y
 [DxPsi,FxPsi] = GFD_RobM2(x,y,Lx,Psil,Psir,Psid,Psiu,f,m,m2,ba,bb,bc,bd,B,theta,Psida,Psidb,Psiua,Psiub,Psila,Psilb,Psira,Psirb);
 [DyPsi,FyPsi] = GFD_RobM2(x,y,Ly,Psil,Psir,Psid,Psiu,f,m,m2,ba,bb,bc,bd,B,theta,Psida,Psidb,Psiua,Psiub,Psila,Psilb,Psira,Psirb);
 % modificaci\'on de las 4 esquinas para condici\'on Dirichlet
-esq = [1 m2 mm mm-m2+1];
+esq = [1 m2 N N-m2+1];
 condC = [Cl(0) Cl(H) Cr(0) Cr(H)];
 D2C(esq,esq) = speye(4);    F2C(esq) = condC;
 DxC(esq,esq) = speye(4);    FxC(esq) = condC;
@@ -108,8 +108,8 @@ DyPsi(esq,esq) = speye(4);    FyPsi(esq) = condPsi;
 % D2*C - 1/b * ( Dy*Psi .* Dx*C  -  Dx*Psi .* Dy*C ) = dC/dt
 % definiendo un vector soluci\'on U=[Psi ; C];
 % === Parte Lineal del sistema (Matriz A)===
-Mceros = zeros(mm,mm);       % mismo tamano que D2,Dx,Dy
-Vceros = zeros(mm,1);        % mismo tamano que F2,Fx,Fy
+Mceros = zeros(N,N);       % mismo tamano que D2,Dx,Dy
+Vceros = zeros(N,1);        % mismo tamano que F2,Fx,Fy
 
 DxCpsi = DxC; DxCpsi(B,:) = 0;  % mod de DxC para no afectar la frontera en psi
 FxCpsi = FxC; FxCpsi(B) = 0;    % mod de FxC para no afectar la frontera en psi
@@ -123,8 +123,8 @@ A = [D2Psi , -1/a*DxCpsi   ;  Mceros , D2C];      % lineal
 Ar = [F2Psi-1/a*FxCpsi   ;   Vceros+F2C];          % lado derecho
 
 % === Parte Lineal y No lineal F(U) ===
-uno = 1:mm;         % primeros indices de U corresponden a Psi
-dos = mm+1:2*mm;    % segundos indices de U corresponden a C
+uno = 1:N;         % primeros indices de U corresponden a Psi
+dos = N+1:2*N;    % segundos indices de U corresponden a C
 
 F =@(t,U) A*U - Ar ...
     +[Vceros ; - 1/b*(DyPsiC*U(uno)).*(DxC*U(dos)) + 1/b*(DxPsiC*U(uno)).*(DyC*U(dos))]...
@@ -185,8 +185,8 @@ C0=x(:)./L;
 % % [U,fval,exitflag,output] = fsolve(F,U1, opciones);
 % %
 % % %% Graficando resultados
-% % Psi = U(1:mm);
-% % C = U(mm+1:2*mm);
+% % Psi = U(1:N);
+% % C = U(N+1:2*N);
 % % % función de flujo
 % % figure()
 % % surf(x,y,reshape(Psi,m2,m)); title('\Psi')
@@ -218,18 +218,18 @@ curvaspsi=[-0.15 , -0.05, -0.2:0.1:1];
 %for i=1:ngraf_saltar:size(U,1)
 %    tiempo = i*dt;
 %    figure(1)
-%    [c,h]=contour(x,y,reshape(U(i,1:mm),m2,m),curvaspsi);
+%    [c,h]=contour(x,y,reshape(U(i,1:N),m2,m),curvaspsi);
 %    clabel(c,h,curvaspsi)
 %    title(['\Psi , t = ', num2str(tiempo)])
 %    figure(2)
-%    [c,h]=contour(x,y,reshape(U(i,mm+1:2*mm),m2,m),curvasc);
+%    [c,h]=contour(x,y,reshape(U(i,N+1:2*N),m2,m),curvasc);
 %    clabel(c,h,curvasc)
 %    title(['C , t = ', num2str(tiempo)])
 %    pause(0.7)
 %end
 
 %% Soluciones al t final
-Psifinal = U(end,1:mm)'; Cfinal = U(end,mm+1:2*mm)';
+Psifinal = U(end,1:N)'; Cfinal = U(end,N+1:2*N)';
 
 % velocidad
 figure()

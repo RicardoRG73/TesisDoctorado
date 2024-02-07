@@ -1,7 +1,7 @@
+# -*- coding: utf-8 -*-
 #%%
-""" LibrerÃ­as necesarias """
+""" Librerí­as necesarias """
 import numpy as np
-from scipy import sparse as sp
 
 # calfem-python
 import calfem.geometry as cfg
@@ -13,7 +13,7 @@ plt.style.use(['seaborn-v0_8','paper.mplstyle'])
 plt.rcParams['text.usetex'] = False
 mapa_de_color = "plasma"
 
-""" Objeto geometrÃ­a """
+""" Objeto geometrí­a """
 geometria = cfg.Geometry()
 
 # puntos
@@ -26,7 +26,7 @@ geometria.point([70,30])    # 5
 geometria.point([60,30])    # 6
 geometria.point([50,25])    # 7
 
-# lÃ­neas
+# líneas
 Dirich_left = 10
 Dirich_right = 11
 Neumann_top = 12
@@ -45,14 +45,14 @@ geometria.line([7,0], marker=Dirich_left)    # 7
 mat0 = 100
 geometria.surface([0,1,2,3,4,5,6,7], marker=mat0)
 
-# grÃ¡fica de la geometrÃ­a
+# gráfica de la geometría
 cfv.figure(fig_size=(16,5))
-cfv.title('GeometrÃ­a', fontdict={"fontsize": 32})
+cfv.title('Geometrí­a', fontdict={"fontsize": 32})
 cfv.draw_geometry(geometria, font_size=16, draw_axis=True)
 plt.xticks(fontsize=20)
 plt.yticks(fontsize=20)
 
-""" CreaciÃ³n del objeto malla usando el objeto geometrÃ­a """
+""" Creación del objeto malla usando el objeto geometrí­a """
 mesh = cfm.GmshMesh(geometria)
 
 mesh.el_type = 2                            # type of element: 2 = triangle
@@ -67,7 +67,7 @@ verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
     mesh.el_type
 )
 
-# grÃ¡fica de la malla
+# gráfica de la malla
 cfv.figure(fig_size=(16,5))
 cfv.title('Malla', fontdict={"fontsize": 32})
 cfv.draw_mesh(
@@ -81,7 +81,7 @@ plt.xticks(fontsize=20)
 plt.yticks(fontsize=20)
 
 
-""" IdentificaciÃ³n de las diferentes fronteras """
+""" Identificación de las diferentes fronteras """
 BDirl = np.asarray(bdofs[Dirich_left]) - 1
 BDirr = np.asarray(bdofs[Dirich_right]) - 1
 BNeub = np.asarray(bdofs[Neumann_bottom]) - 1
@@ -110,7 +110,7 @@ nodos_por_color(
 )
 plt.axis('equal')
 
-""" ParÃ¡metros del problema """
+""" Parámetros del problema """
 L = np.array([0,0,0,2,0,2])
 k0 = lambda p: 1
 f = lambda p:  0 #-0.001
@@ -159,7 +159,7 @@ plt.colorbar()
 plt.axis('equal')
 plt.xlabel('$x$')
 plt.ylabel('$y$')
-plt.title("SoluciÃ³n (Contorno)")
+plt.title("Solución (Contorno)")
 
 plt.style.use("paper3dplot.mplstyle")
 fig = plt.figure(figsize=(10,8))
@@ -174,7 +174,7 @@ ax.plot_trisurf(
 )
 ax.view_init(azim=-60, elev=50)
 
-plt.title("SoluciÃ³n (3D)")
+plt.title("Solución (3D)")
 ax.set_xlabel("$x$")
 ax.set_ylabel("$y$")
 ax.set_zlabel("$u(x,y)$")
