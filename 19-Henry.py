@@ -1,5 +1,4 @@
 #%%
-
 """
 Librerías necesarias
 """
@@ -8,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 
-plt.style.use(["seaborn-v0_8-darkgrid", "seaborn-v0_8-colorblind", "seaborn-v0_8-paper"])
+plt.style.use(["seaborn-v0_8-darkgrid", "seaborn-v0_8-colorblind", "seaborn-v0_8-talk"])
 plt.rcParams["legend.frameon"] = True
 plt.rcParams["legend.shadow"] = True
 plt.rcParams["legend.framealpha"] = 0.6
@@ -50,10 +49,8 @@ geometria.surface([0,1,2,3], marker=mat0)
 
 # gráfica de la geometría
 cfv.figure(fig_size=(8,5))
-cfv.title('Geometría', fontdict={"fontsize": 32})
+cfv.title('Geometría')
 cfv.draw_geometry(geometria, font_size=16, draw_axis=True)
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
 
 
 """
@@ -76,7 +73,7 @@ verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
 
 # gráfica de la malla
 cfv.figure(fig_size=(8,5))
-cfv.title('Malla', fontdict={"fontsize": 32})
+cfv.title('Malla $N=%d' %coords.shape[0] +'$')
 cfv.draw_mesh(
     coords=coords,
     edof=edof,
@@ -84,8 +81,6 @@ cfv.draw_mesh(
     el_type=mesh.el_type,
     filled=True
 )
-plt.xticks(fontsize=20)
-plt.yticks(fontsize=20)
 
 
 """
@@ -173,7 +168,7 @@ D2psi, F2psi = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 D2psi = D2psi.toarray()
-F2psi = F2psi.toarray()[:,0]
+F2psi = F2psi
 
 Lx = np.array([0,1,0,0,0,0])
 Dxpsi, Fxpsi = create_system_K_F(
@@ -186,7 +181,7 @@ Dxpsi, Fxpsi = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 Dxpsi = Dxpsi.toarray()
-Fxpsi = Fxpsi.toarray()[:,0]
+Fxpsi = Fxpsi
 
 Ly = np.array([0,0,1,0,0,0])
 Dypsi, Fypsi = create_system_K_F(
@@ -199,7 +194,7 @@ Dypsi, Fypsi = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 Dypsi = Dypsi.toarray()
-Fypsi = Fypsi.toarray()[:,0]
+Fypsi = Fypsi
 
 
 """
@@ -233,7 +228,7 @@ D2c, F2c = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 D2c = D2c.toarray()
-F2c = F2c.toarray()[:,0]
+F2c = F2c
 
 Dxc, Fxc = create_system_K_F(
     p=coords,
@@ -245,7 +240,7 @@ Dxc, Fxc = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 Dxc = Dxc.toarray()
-Fxc = Fxc.toarray()[:,0]
+Fxc = Fxc
 
 Dyc, Fyc = create_system_K_F(
     p=coords,
@@ -257,7 +252,7 @@ Dyc, Fyc = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 Dyc = Dyc.toarray()
-Fyc = Fyc.toarray()[:,0]
+Fyc = Fyc
 
 
 """
@@ -267,21 +262,18 @@ Ensamble del IVP
 Dxcpsi = Dxc.copy()
 Fxcpsi = Fxc.copy()
 
-Dxcpsi[:,Boundaries] = 0
 Dxcpsi[Boundaries,:] = 0
 Fxcpsi[Boundaries] = 0
 
 Dypsic = Dypsi.copy()
 Fypsic = Fypsi.copy()
 
-Dypsic[:,Boundaries] = 0
 Dypsic[Boundaries,:] = 0
 Fypsic[Boundaries] = 0
 
 Dxpsic = Dxpsi.copy()
 Fxpsic = Fxpsi.copy()
 
-Dxpsic[:,Boundaries] = 0
 Dxpsic[Boundaries,:] = 0
 Fxpsic[Boundaries] = 0
 
@@ -386,7 +378,7 @@ ax2.set_title("$C_0$")
 U0 = np.hstack((Psi0, C0))
 
 # Solución del IVP
-tspan = [0,1.6]             # intervalo de solución
+tspan = [0,0.21]             # intervalo de solución
 sol = solve_ivp(fun, tspan, U0, method="RK45")
 
 U = sol.y
@@ -454,5 +446,45 @@ plt.ylabel('$y$')
 plt.title("$C$")
 plt.colorbar()
 
-plt.show()
 # %%
+
+levelsP = 20
+levelsC = 20
+
+fig, axes = plt.subplots(3, 2, sharex="col", sharey="row")
+
+ax1 = axes[0,0]
+ax2 = axes[0,1]
+ax3 = axes[1,0]
+ax4 = axes[1,1]
+ax5 = axes[2,0]
+ax6 = axes[2,1]
+
+ax1.tricontourf(coords[:,0], coords[:,1], U[:N,0], cmap=mapa_de_color, levels=levelsP)
+ax1.set_title("$\Psi$ at $t=%1.3f" %sol.t[0] + "$")
+
+# ax2 = plt.subplot(322)
+ax2.tricontourf(coords[:,0], coords[:,1], U[N:,0], cmap=mapa_de_color, levels=levelsC)
+ax2.set_title("$C$ at $t=%1.3f" %sol.t[0] + "$")
+
+
+t_index = sol.t.shape[0]//4
+# ax3 = plt.subplot(323, sharex=True)
+ax3.tricontourf(coords[:,0], coords[:,1], U[:N,t_index], cmap=mapa_de_color, levels=levelsP)
+ax3.set_title("$\Psi$ at $t=%1.3f" %sol.t[t_index] + "$")
+
+# ax4 = plt.subplot(324)
+ax4.tricontourf(coords[:,0], coords[:,1], U[N:,t_index], cmap=mapa_de_color, levels=levelsC)
+ax4.set_title("$C$ at $t=%1.3f" %sol.t[t_index] + "$")
+
+# ax5 = plt.subplot(325)
+ax5.tricontourf(coords[:,0], coords[:,1], U[:N,-1], cmap=mapa_de_color, levels=levelsP)
+ax5.set_title("$\Psi$ at $t=%1.3f" %sol.t[-1] + "$")
+
+# ax6 = plt.subplot(326)
+ax6.tricontourf(coords[:,0], coords[:,1], U[N:,-1], cmap=mapa_de_color, levels=levelsC)
+ax6.set_title("$C$ at $t=%1.3f" %sol.t[-1] + "$")
+
+fig.suptitle("Solution with $N=%d" %coords.shape[0] +"$")
+
+plt.show()
