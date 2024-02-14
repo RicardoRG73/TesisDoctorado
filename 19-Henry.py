@@ -168,7 +168,6 @@ D2psi, F2psi = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 D2psi = D2psi.toarray()
-F2psi = F2psi
 
 Lx = np.array([0,1,0,0,0,0])
 Dxpsi, Fxpsi = create_system_K_F(
@@ -181,7 +180,6 @@ Dxpsi, Fxpsi = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 Dxpsi = Dxpsi.toarray()
-Fxpsi = Fxpsi
 
 Ly = np.array([0,0,1,0,0,0])
 Dypsi, Fypsi = create_system_K_F(
@@ -194,7 +192,6 @@ Dypsi, Fypsi = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 Dypsi = Dypsi.toarray()
-Fypsi = Fypsi
 
 
 """
@@ -228,7 +225,6 @@ D2c, F2c = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 D2c = D2c.toarray()
-F2c = F2c
 
 Dxc, Fxc = create_system_K_F(
     p=coords,
@@ -240,7 +236,6 @@ Dxc, Fxc = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 Dxc = Dxc.toarray()
-Fxc = Fxc
 
 Dyc, Fyc = create_system_K_F(
     p=coords,
@@ -252,7 +247,6 @@ Dyc, Fyc = create_system_K_F(
     neumann_boundaries=fronteras_neumann
 )
 Dyc = Dyc.toarray()
-Fyc = Fyc
 
 
 """
@@ -459,6 +453,13 @@ ax3 = axes[1,0]
 ax4 = axes[1,1]
 ax5 = axes[2,0]
 ax6 = axes[2,1]
+
+ax1.set_aspect("equal", "box")
+ax2.set_aspect("equal", "box")
+ax3.set_aspect("equal", "box")
+ax4.set_aspect("equal", "box")
+ax5.set_aspect("equal", "box")
+ax6.set_aspect("equal", "box")
 
 ax1.tricontourf(coords[:,0], coords[:,1], U[:N,0], cmap=mapa_de_color, levels=levelsP)
 ax1.set_title("$\Psi$ at $t=%1.3f" %sol.t[0] + "$")

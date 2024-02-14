@@ -12,8 +12,8 @@ clear all; close all; clc
 % nombre = 'm81-41-t1239-';
 % path = ['figuras/',nombre]; % carpeta
 %% Par\'ametros
-m = 5; % divisiones en el eje x (multiplo de 4 mas 1)
-m2 = 4; % divisiones en el eje y
+m = 21; % divisiones en el eje x (multiplo de 4 mas 1)
+m2 = 11; % divisiones en el eje y
 mm = m*m2;
 H = 1;
 H_L = 0.25; % H/L

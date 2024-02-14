@@ -26,8 +26,8 @@ b = 0.1;
 tfin = 0.2;   % tiempo final
 f = @(x,y) 0; % fuente
 % par\'ametros para generar la malla
-m = 4; % nodos en el eje x
-m2 = 4; % nodos en el eje y
+m = 21; % nodos en el eje x
+m2 = 11; % nodos en el eje y
 N = m*m2;
 H = 1;
 H_over_L = 0.5;
