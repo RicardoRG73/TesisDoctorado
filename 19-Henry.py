@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #%%
 """
 Librerías necesarias
@@ -112,7 +113,7 @@ etiquetas = (
     "Esquinas"
 )
 
-plt.figure(figsize=(16,8))
+plt.figure()
 nodos_por_color(
     boundaries=fronteras,
     p=coords,
