@@ -46,7 +46,7 @@ u = y
 v = -x
 
 plt.figure()
-plt.contourf(x,y,x**2 + y**2, cmap="Blues", levels=11)
+plt.contourf(x,y,x**2 + y**2, cmap="Blues", levels=21)
 plt.streamplot(x,y,u,v, color="k")
 plt.axis("equal")
 
@@ -56,8 +56,10 @@ plt.axis("equal")
 x = np.linspace(-5,5,101)
 y = x.copy()
 x,y = np.meshgrid(x,y)
+
 u = np.ones(x.shape)
 v = 1 + y**2
+
 plt.figure()
 plt.contourf(x,y,v, cmap="Blues", levels=21)
 plt.streamplot(x,y,u,v, color="k")
