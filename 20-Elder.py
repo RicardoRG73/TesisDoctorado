@@ -71,7 +71,7 @@ cfv.draw_geometry(geometry, draw_axis=True)
 # =============================================================================
 mesh = cfm.GmshMesh(
     geometry,
-    el_size_factor=0.06
+    el_size_factor=0.02
 )
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()
@@ -92,6 +92,8 @@ cfv.draw_mesh(
     el_type=mesh.el_type,
     filled=True
 )
+
+plt.savefig("figuras/Elder/Malla_N="+str(coords.shape[0])+".pdf")
 
 #%%
 # =============================================================================
@@ -138,11 +140,14 @@ nodos_por_color(
     interior=interior,
     label_interior="Nodos interior",
     alpha=1,
-    nums=True,
+    nums=False,
     legend=True,
-    loc="center"
+    loc="lower center",
+    s=10
 )
 plt.axis('equal')
+
+plt.savefig("figuras/Elder/nodos_N="+str(coords.shape[0])+".pdf")
 
 #%%
 # =============================================================================
@@ -189,7 +194,7 @@ D2P, F2P = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-D2P = D2P.toarray()
+# D2P = D2P.toarray()
 
 DxP, FxP = create_system_K_F(
     p=coords,
@@ -200,7 +205,7 @@ DxP, FxP = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-DxP.toarray()
+# DxP.toarray()
 
 DyP, FyP = create_system_K_F(
     p=coords,
@@ -211,7 +216,7 @@ DyP, FyP = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-DyP.toarray()
+# DyP.toarray()
 
 #%%
 # =============================================================================
@@ -236,7 +241,7 @@ D2C, F2C = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-D2C = D2C.toarray()
+# D2C = D2C.toarray()
 
 DxC, FxC = create_system_K_F(
     p=coords,
@@ -247,7 +252,7 @@ DxC, FxC = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-DxC = DxC.toarray()
+# DxC = DxC.toarray()
 
 DyC, FyC = create_system_K_F(
     p=coords,
@@ -258,34 +263,39 @@ DyC, FyC = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-DyC = DyC.toarray()
+# DyC = DyC.toarray()
 
 #%%
 # =============================================================================
 # Problem coupling
 # =============================================================================
-zeros_mat = np.zeros((N,N))
+import scipy.sparse as sp
+
+zeros_mat = sp.lil_matrix(np.zeros((N,N)))
 zeros_vec = np.zeros(N)
 
 DxCP = DxC.copy()
+DxCP = sp.lil_matrix(DxCP)
 DxCP[Boundaries,:] = 0
 FxCP = FxC.copy()
 FxCP[Boundaries] = 0
 
 DyPC = DyP.copy()
+DyPC = sp.lil_matrix(DyPC)
 DyPC[Boundaries,:] = 0
 FyPC = FyP.copy()
 FyPC[Boundaries] = 0
 
 DxPC = DxP.copy()
+DxPC = sp.lil_matrix(DxPC)
 DxPC[Boundaries,:] = 0
 FxPC = FxP.copy()
 FxP[Boundaries] = 0
 
 # Linear
-Linear_mat = np.vstack((
-    np.hstack((D2P, -Ra*DxCP)),
-    np.hstack((zeros_mat, D2C))
+Linear_mat = sp.vstack((
+    sp.hstack((D2P, -Ra*DxCP)),
+    sp.hstack((zeros_mat, D2C))
 ))
 
 Linear_vec = - np.hstack((
@@ -293,7 +303,7 @@ Linear_vec = - np.hstack((
     F2C
 ))
 
-ULinear = np.linalg.solve(Linear_mat, Linear_vec)
+ULinear = sp.linalg.spsolve(sp.csr_matrix(Linear_mat), Linear_vec)
 
 fig, (ax1, ax2) = plt.subplots(2,1, sharex=True)
 contourf1 = ax1.tricontourf(coords[:,0], coords[:,1], ULinear[:N], cmap=color_map)
@@ -334,6 +344,7 @@ def rhs(t,U):
 # =============================================================================
 tfinal = 1.239
 tspan = [0, tfinal]
+t_eval = [0.000, 0.015, 0.050, 0.100, 1.239]
 
 P0 = zeros_vec.copy()
 C0 = zeros_vec.copy()
@@ -342,7 +353,7 @@ C0[btb] = 1
 
 U0 = np.hstack((P0,C0))
 
-sol = solve_ivp(rhs, tspan, U0)
+sol = solve_ivp(rhs, tspan, U0, t_eval=t_eval)
 
 U = sol.y
 times = sol.t
@@ -355,7 +366,7 @@ times = sol.t
 levelsP = 20
 levelsC = 20
 
-fig, axes = plt.subplots(3, 2, sharex="col", sharey="row")
+fig, axes = plt.subplots(5, 2, sharex="col", sharey="row")
 
 ax1 = axes[0,0]
 ax2 = axes[0,1]
@@ -363,6 +374,10 @@ ax3 = axes[1,0]
 ax4 = axes[1,1]
 ax5 = axes[2,0]
 ax6 = axes[2,1]
+ax7 = axes[3,0]
+ax8 = axes[3,1]
+ax9 = axes[4,0]
+ax10 = axes[4,1]
 
 ax1.set_aspect("equal", "box")
 ax2.set_aspect("equal", "box")
@@ -370,31 +385,43 @@ ax3.set_aspect("equal", "box")
 ax4.set_aspect("equal", "box")
 ax5.set_aspect("equal", "box")
 ax6.set_aspect("equal", "box")
+ax7.set_aspect("equal", "box")
+ax8.set_aspect("equal", "box")
+ax9.set_aspect("equal", "box")
+ax10.set_aspect("equal", "box")
 
 ax1.tricontourf(coords[:,0], coords[:,1], U[:N,0], cmap=color_map, levels=levelsP)
 ax1.set_title("$\Psi$ at $t=%1.3f" %sol.t[0] + "$")
 
-# ax2 = plt.subplot(322)
 ax2.tricontourf(coords[:,0], coords[:,1], U[N:,0], cmap=color_map, levels=levelsC)
 ax2.set_title("$C$ at $t=%1.3f" %sol.t[0] + "$")
 
-t_index = sol.t.shape[0]//8
-# ax3 = plt.subplot(323, sharex=True)
-ax3.tricontourf(coords[:,0], coords[:,1], U[:N,t_index], cmap=color_map, levels=levelsP)
-ax3.set_title("$\Psi$ at $t=%1.3f" %sol.t[t_index] + "$")
+ax3.tricontourf(coords[:,0], coords[:,1], U[:N,1], cmap=color_map, levels=levelsP)
+ax3.set_title("$\Psi$ at $t=%1.3f" %sol.t[1] + "$")
 
-# ax4 = plt.subplot(324)
-ax4.tricontourf(coords[:,0], coords[:,1], U[N:,t_index], cmap=color_map, levels=levelsC)
-ax4.set_title("$C$ at $t=%1.3f" %sol.t[t_index] + "$")
+ax4.tricontourf(coords[:,0], coords[:,1], U[N:,1], cmap=color_map, levels=levelsC)
+ax4.set_title("$C$ at $t=%1.3f" %sol.t[1] + "$")
 
-# ax5 = plt.subplot(325)
-ax5.tricontourf(coords[:,0], coords[:,1], U[:N,-1], cmap=color_map, levels=levelsP)
-ax5.set_title("$\Psi$ at $t=%1.3f" %sol.t[-1] + "$")
+ax5.tricontourf(coords[:,0], coords[:,1], U[:N,2], cmap=color_map, levels=levelsP)
+ax5.set_title("$\Psi$ at $t=%1.3f" %sol.t[2] + "$")
 
-# ax6 = plt.subplot(326)
-ax6.tricontourf(coords[:,0], coords[:,1], U[N:,-1], cmap=color_map, levels=levelsC)
-ax6.set_title("$C$ at $t=%1.3f" %sol.t[-1] + "$")
+ax6.tricontourf(coords[:,0], coords[:,1], U[N:,2], cmap=color_map, levels=levelsC)
+ax6.set_title("$C$ at $t=%1.3f" %sol.t[2] + "$")
+
+ax7.tricontourf(coords[:,0], coords[:,1], U[:N,3], cmap=color_map, levels=levelsP)
+ax7.set_title("$\Psi$ at $t=%1.3f" %sol.t[3] + "$")
+
+ax8.tricontourf(coords[:,0], coords[:,1], U[N:,3], cmap=color_map, levels=levelsC)
+ax8.set_title("$C$ at $t=%1.3f" %sol.t[3] + "$")
+
+ax9.tricontourf(coords[:,0], coords[:,1], U[:N,4], cmap=color_map, levels=levelsP)
+ax9.set_title("$\Psi$ at $t=%1.3f" %sol.t[4] + "$")
+
+ax10.tricontourf(coords[:,0], coords[:,1], U[N:,4], cmap=color_map, levels=levelsC)
+ax10.set_title("$C$ at $t=%1.3f" %sol.t[4] + "$")
 
 fig.suptitle("Solution with $N=%d" %coords.shape[0] +"$")
+
+plt.savefig("figuras/Elder/U_N="+str(coords.shape[0])+".pdf")
 
 plt.show()

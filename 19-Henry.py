@@ -62,7 +62,7 @@ mesh = cfm.GmshMesh(geometria)
 
 mesh.el_type = 2                            # type of element: 2 = triangle
 mesh.dofs_per_node = 1
-mesh.el_size_factor = 0.1
+mesh.el_size_factor = 0.05
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()   # create the geometry
 verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
@@ -83,6 +83,7 @@ cfv.draw_mesh(
     filled=True
 )
 
+plt.savefig("figuras/Henry/Malla_N="+str(coords.shape[0])+".pdf")
 
 """
 Identificación de los nodos de frontera
@@ -121,10 +122,13 @@ nodos_por_color(
     interior=interiores,
     label_interior="Nodos Interiores",
     alpha=1,
-    nums=True,
-    legend=False
+    nums=False,
+    legend=True,
+    loc="center"
 )
 plt.axis('equal')
+
+plt.savefig("figuras/Henry/nodos_N="+str(coords.shape[0])+".pdf")
 
 #%%
 """
@@ -168,7 +172,7 @@ D2psi, F2psi = create_system_K_F(
     dirichlet_boundaries=fronteas_dirichlet,
     neumann_boundaries=fronteras_neumann
 )
-D2psi = D2psi.toarray()
+# D2psi = D2psi.toarray()
 
 Lx = np.array([0,1,0,0,0,0])
 Dxpsi, Fxpsi = create_system_K_F(
@@ -180,7 +184,7 @@ Dxpsi, Fxpsi = create_system_K_F(
     dirichlet_boundaries=fronteas_dirichlet,
     neumann_boundaries=fronteras_neumann
 )
-Dxpsi = Dxpsi.toarray()
+# Dxpsi = Dxpsi.toarray()
 
 Ly = np.array([0,0,1,0,0,0])
 Dypsi, Fypsi = create_system_K_F(
@@ -192,7 +196,7 @@ Dypsi, Fypsi = create_system_K_F(
     dirichlet_boundaries=fronteas_dirichlet,
     neumann_boundaries=fronteras_neumann
 )
-Dypsi = Dypsi.toarray()
+# Dypsi = Dypsi.toarray()
 
 
 """
@@ -225,7 +229,7 @@ D2c, F2c = create_system_K_F(
     dirichlet_boundaries=fronteas_dirichlet,
     neumann_boundaries=fronteras_neumann
 )
-D2c = D2c.toarray()
+# D2c = D2c.toarray()
 
 Dxc, Fxc = create_system_K_F(
     p=coords,
@@ -236,7 +240,7 @@ Dxc, Fxc = create_system_K_F(
     dirichlet_boundaries=fronteas_dirichlet,
     neumann_boundaries=fronteras_neumann
 )
-Dxc = Dxc.toarray()
+# Dxc = Dxc.toarray()
 
 Dyc, Fyc = create_system_K_F(
     p=coords,
@@ -247,26 +251,31 @@ Dyc, Fyc = create_system_K_F(
     dirichlet_boundaries=fronteas_dirichlet,
     neumann_boundaries=fronteras_neumann
 )
-Dyc = Dyc.toarray()
+# Dyc = Dyc.toarray()
 
 
 """
 Ensamble del IVP
 """
 #  modificaciones para no afectar las condiciones de frontera
+import scipy.sparse as sp
+
 Dxcpsi = Dxc.copy()
+Dxcpsi = sp.lil_matrix(Dxcpsi)
 Fxcpsi = Fxc.copy()
 
 Dxcpsi[Boundaries,:] = 0
 Fxcpsi[Boundaries] = 0
 
 Dypsic = Dypsi.copy()
+Dypsic = sp.lil_matrix(Dypsic)
 Fypsic = Fypsi.copy()
 
 Dypsic[Boundaries,:] = 0
 Fypsic[Boundaries] = 0
 
 Dxpsic = Dxpsi.copy()
+Dxpsic = sp.lil_matrix(Dxpsic)
 Fxpsic = Fxpsi.copy()
 
 Dxpsic[Boundaries,:] = 0
@@ -300,11 +309,11 @@ Fxpsic[Boundaries] = 0
 
 # Parte lineal del sistema (matriz A)
 N = coords.shape[0]
-A = np.vstack((
-    np.hstack((
+A = sp.vstack((
+    sp.hstack((
         D2psi, -1/a * Dxcpsi
     )),
-    np.hstack((
+    sp.hstack((
         np.zeros((N,N)), D2c
     ))
 ))
@@ -366,87 +375,63 @@ fig = plt.figure()
 ax = plt.subplot(1, 2, 1, projection="3d")
 ax.plot_trisurf(coords[:,0],coords[:,1],Psi0, cmap=mapa_de_color, edgecolor="k")
 ax.set_title("$\Psi_0$")
+ax.set_xlabel("$x$")
+ax.set_ylabel("$y$")
 ax2 = plt.subplot(1, 2, 2, projection="3d")
 ax2.plot_trisurf(coords[:,0],coords[:,1],C0, cmap=mapa_de_color, edgecolor="k")
 ax2.set_title("$C_0$")
+ax2.set_xlabel("$x$")
+ax2.set_ylabel("$y$")
+
+plt.savefig("figuras/Henry/U0_N="+str(coords.shape[0])+".pdf")
 
 U0 = np.hstack((Psi0, C0))
 
 # Solución del IVP
 tspan = [0,0.21]             # intervalo de solución
-sol = solve_ivp(fun, tspan, U0, method="RK45")
+t_eval = [0, 0.01, 0.05, 0.21]
+sol = solve_ivp(fun, tspan, U0, method="RK45", t_eval=t_eval)
 
 U = sol.y
 
 # Gráfica de la solución en el tiempo final
-plt.style.use("paper3dplot.mplstyle")
-fig = plt.figure(figsize=(10,8))
-ax = plt.axes(projection="3d")
-ax.plot_trisurf(
-    coords[:,0],
-    coords[:,1],
-    U[:N,-1],
-    cmap=mapa_de_color,
-    linewidth=1,
-    antialiased=False
-)
-ax.view_init(azim=-120, elev=50)
-plt.title("$\Psi$")
-ax.set_xlabel("$x$")
-ax.set_ylabel("$y$")
+# plt.style.use("paper3dplot.mplstyle")
+# fig = plt.figure(figsize=(10,8))
+# ax = plt.axes(projection="3d")
+# ax.plot_trisurf(
+#     coords[:,0],
+#     coords[:,1],
+#     U[:N,-1],
+#     cmap=mapa_de_color,
+#     linewidth=1,
+#     antialiased=False
+# )
+# ax.view_init(azim=-120, elev=50)
+# plt.title("$\Psi$")
+# ax.set_xlabel("$x$")
+# ax.set_ylabel("$y$")
 
-fig = plt.figure(figsize=(10,8))
-ax = plt.axes(projection="3d")
-ax.plot_trisurf(
-    coords[:,0],
-    coords[:,1],
-    U[N:,-1],
-    cmap=mapa_de_color,
-    linewidth=1,
-    antialiased=False
-)
-ax.view_init(azim=-120, elev=50)
-plt.title("$C$")
-ax.set_xlabel("$x$")
-ax.set_ylabel("$y$")
-
-
-plt.style.use(["default", "seaborn-v0_8", "seaborn-v0_8-talk"])
-
-plt.figure()
-plt.tricontourf(
-    coords[:,0],
-    coords[:,1],
-    U[:N,-1],
-    levels=20,
-    cmap=mapa_de_color
-)
-plt.axis("equal")
-plt.xlabel('$x$')
-plt.ylabel('$y$')
-plt.title("$\Psi$")
-plt.colorbar()
-
-plt.figure()
-plt.tricontourf(
-    coords[:,0],
-    coords[:,1],
-    U[N:,-1],
-    levels=20,
-    cmap=mapa_de_color
-)
-plt.axis("equal")
-plt.xlabel('$x$')
-plt.ylabel('$y$')
-plt.title("$C$")
-plt.colorbar()
+# fig = plt.figure(figsize=(10,8))
+# ax = plt.axes(projection="3d")
+# ax.plot_trisurf(
+#     coords[:,0],
+#     coords[:,1],
+#     U[N:,-1],
+#     cmap=mapa_de_color,
+#     linewidth=1,
+#     antialiased=False
+# )
+# ax.view_init(azim=-120, elev=50)
+# plt.title("$C$")
+# ax.set_xlabel("$x$")
+# ax.set_ylabel("$y$")
 
 # %%
 
 levelsP = 20
 levelsC = 20
 
-fig, axes = plt.subplots(3, 2, sharex="col", sharey="row")
+fig, axes = plt.subplots(4, 2, sharex="col", sharey="row")
 
 ax1 = axes[0,0]
 ax2 = axes[0,1]
@@ -454,6 +439,8 @@ ax3 = axes[1,0]
 ax4 = axes[1,1]
 ax5 = axes[2,0]
 ax6 = axes[2,1]
+ax7 = axes[3,0]
+ax8 = axes[3,1]
 
 ax1.set_aspect("equal", "box")
 ax2.set_aspect("equal", "box")
@@ -461,32 +448,35 @@ ax3.set_aspect("equal", "box")
 ax4.set_aspect("equal", "box")
 ax5.set_aspect("equal", "box")
 ax6.set_aspect("equal", "box")
+ax7.set_aspect("equal", "box")
+ax8.set_aspect("equal", "box")
 
 ax1.tricontourf(coords[:,0], coords[:,1], U[:N,0], cmap=mapa_de_color, levels=levelsP)
 ax1.set_title("$\Psi$ at $t=%1.3f" %sol.t[0] + "$")
 
-# ax2 = plt.subplot(322)
 ax2.tricontourf(coords[:,0], coords[:,1], U[N:,0], cmap=mapa_de_color, levels=levelsC)
 ax2.set_title("$C$ at $t=%1.3f" %sol.t[0] + "$")
 
+ax3.tricontourf(coords[:,0], coords[:,1], U[:N,1], cmap=mapa_de_color, levels=levelsP)
+ax3.set_title("$\Psi$ at $t=%1.3f" %sol.t[1] + "$")
 
-t_index = sol.t.shape[0]//4
-# ax3 = plt.subplot(323, sharex=True)
-ax3.tricontourf(coords[:,0], coords[:,1], U[:N,t_index], cmap=mapa_de_color, levels=levelsP)
-ax3.set_title("$\Psi$ at $t=%1.3f" %sol.t[t_index] + "$")
+ax4.tricontourf(coords[:,0], coords[:,1], U[N:,1], cmap=mapa_de_color, levels=levelsC)
+ax4.set_title("$C$ at $t=%1.3f" %sol.t[1] + "$")
 
-# ax4 = plt.subplot(324)
-ax4.tricontourf(coords[:,0], coords[:,1], U[N:,t_index], cmap=mapa_de_color, levels=levelsC)
-ax4.set_title("$C$ at $t=%1.3f" %sol.t[t_index] + "$")
+ax5.tricontourf(coords[:,0], coords[:,1], U[:N,2], cmap=mapa_de_color, levels=levelsP)
+ax5.set_title("$\Psi$ at $t=%1.3f" %sol.t[2] + "$")
 
-# ax5 = plt.subplot(325)
-ax5.tricontourf(coords[:,0], coords[:,1], U[:N,-1], cmap=mapa_de_color, levels=levelsP)
-ax5.set_title("$\Psi$ at $t=%1.3f" %sol.t[-1] + "$")
+ax6.tricontourf(coords[:,0], coords[:,1], U[N:,2], cmap=mapa_de_color, levels=levelsC)
+ax6.set_title("$C$ at $t=%1.3f" %sol.t[2] + "$")
 
-# ax6 = plt.subplot(326)
-ax6.tricontourf(coords[:,0], coords[:,1], U[N:,-1], cmap=mapa_de_color, levels=levelsC)
-ax6.set_title("$C$ at $t=%1.3f" %sol.t[-1] + "$")
+ax7.tricontourf(coords[:,0], coords[:,1], U[:N,3], cmap=mapa_de_color, levels=levelsP)
+ax7.set_title("$\Psi$ at $t=%1.3f" %sol.t[3] + "$")
+
+ax8.tricontourf(coords[:,0], coords[:,1], U[N:,3], cmap=mapa_de_color, levels=levelsC)
+ax8.set_title("$C$ at $t=%1.3f" %sol.t[3] + "$")
 
 fig.suptitle("Solution with $N=%d" %coords.shape[0] +"$")
+
+plt.savefig("figuras/Henry/U_N="+str(coords.shape[0])+".pdf")
 
 plt.show()

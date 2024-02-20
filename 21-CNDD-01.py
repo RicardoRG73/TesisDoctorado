@@ -131,7 +131,7 @@ nodos_por_color(
     interior=interior,
     label_interior="Interior",
     alpha=1,
-    nums=True,
+    nums=False,
     legend=True,
     loc="best"
 )
@@ -192,7 +192,7 @@ D2P, F2P = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-D2P = D2P.toarray()
+# D2P = D2P.toarray()
 
 DxP, FxP = create_system_K_F(
     p=coords,
@@ -203,7 +203,7 @@ DxP, FxP = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-DxP.toarray()
+# DxP.toarray()
 
 DyP, FyP = create_system_K_F(
     p=coords,
@@ -214,7 +214,7 @@ DyP, FyP = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-DyP.toarray()
+# DyP.toarray()
 
 #%%
 # =============================================================================
@@ -237,7 +237,7 @@ D2C, F2C = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-D2C = D2C.toarray()
+# D2C = D2C.toarray()
 
 DxC, FxC = create_system_K_F(
     p=coords,
@@ -248,7 +248,7 @@ DxC, FxC = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-DxC = DxC.toarray()
+# DxC = DxC.toarray()
 
 DyC, FyC = create_system_K_F(
     p=coords,
@@ -259,7 +259,7 @@ DyC, FyC = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-DyC = DyC.toarray()
+# DyC = DyC.toarray()
 
 #%%
 # =============================================================================
@@ -282,7 +282,7 @@ D2T, F2T = create_system_K_F(
     dirichlet_boundaries=TDirich,
     neumann_boundaries=TNeu
 )
-D2T = D2T.toarray()
+# D2T = D2T.toarray()
 
 DxT, FxT = create_system_K_F(
     p=coords,
@@ -293,7 +293,7 @@ DxT, FxT = create_system_K_F(
     dirichlet_boundaries=TDirich,
     neumann_boundaries=TNeu
 )
-DxT = DxT.toarray()
+# DxT = DxT.toarray()
 
 DyT, FyT = create_system_K_F(
     p=coords,
@@ -304,40 +304,46 @@ DyT, FyT = create_system_K_F(
     dirichlet_boundaries=TDirich,
     neumann_boundaries=TNeu
 )
-DyT = DyT.toarray()
+# DyT = DyT.toarray()
 
 #%%
 # =============================================================================
 # Problem coupling
 # =============================================================================
-zeros_mat = np.zeros((Nnodes,Nnodes))
+import scipy.sparse as sp
+
+zeros_mat = sp.lil_matrix(np.zeros((Nnodes,Nnodes)))
 zeros_vec = np.zeros(Nnodes)
 
 DxC_noBound = DxC.copy()
+DxC_noBound = sp.lil_matrix(DxC_noBound)
 DxC_noBound[Boundaries,:] = 0
 FxC_noBound = FxC.copy()
 FxC_noBound[Boundaries] = 0
 
 DxT_noBound = DxT.copy()
+DxT_noBound = sp.lil_matrix(DxT_noBound)
 DxT_noBound[Boundaries,:] = 0
 FxT_noBound = FxT.copy()
 FxT_noBound[Boundaries] = 0
 
 DyP_noBound = DyP.copy()
+DyP_noBound = sp.lil_matrix(DyP_noBound)
 DyP_noBound[Boundaries,:] = 0
 FyP_noBound = FyP.copy()
 FyP_noBound[Boundaries] = 0
 
 DxP_noBound = DxP.copy()
+DxP_noBound = sp.lil_matrix(DxP_noBound)
 DxP_noBound[Boundaries,:] = 0
 FxP_noBound = FxP.copy()
 FxP_noBound[Boundaries] = 0
 
 # Linear
-Linear_mat = np.vstack((
-    np.hstack((D2P, Ra*DxT_noBound, (Ra*N)*DxC_noBound)),
-    np.hstack((zeros_mat, D2T, zeros_mat)),
-    np.hstack((zeros_mat, zeros_mat, D2C))
+Linear_mat = sp.vstack((
+    sp.hstack((D2P, Ra*DxT_noBound, (Ra*N)*DxC_noBound)),
+    sp.hstack((zeros_mat, D2T, zeros_mat)),
+    sp.hstack((zeros_mat, zeros_mat, D2C))
 ))
 
 Linear_vec = - np.hstack((
@@ -346,37 +352,33 @@ Linear_vec = - np.hstack((
     F2C
 ))
 
-ULinear = np.linalg.solve(Linear_mat, Linear_vec)
+# ULinear = sp.linalg.spsolve(Linear_mat, Linear_vec)
 
-fig, axes = plt.subplots(2,2, sharex="col", sharey="row")
+# fig, axes = plt.subplots(2,2, sharex="col", sharey="row")
 
-ax0 = axes[0,0]
-ax1 = axes[0,1]
-ax2 = axes[1,0]
-ax3 = axes[1,1]
+# ax0 = axes[0,0]
+# ax1 = axes[0,1]
+# ax2 = axes[1,0]
+# ax3 = axes[1,1]
 
-ax0.set_aspect("equal", "box")
-ax1.set_aspect("equal", "box")
-ax2.set_aspect("equal", "box")
-ax3.set_aspect("equal", "box")
+# ax0.set_aspect("equal", "box")
+# ax1.set_aspect("equal", "box")
+# ax2.set_aspect("equal", "box")
+# ax3.set_aspect("equal", "box")
 
-# ax0.scatter(coords[:,0], coords[:,1])
-meshplot = ax0.triplot(coords[:,0], coords[:,1], faces)
-ax0.set_title("Mesh with $%d$ nodes" %Nnodes)
+# meshplot = ax0.triplot(coords[:,0], coords[:,1], faces)
+# ax0.set_title("Mesh with $%d$ nodes" %Nnodes)
 
-contourf1 = ax1.tricontourf(coords[:,0], coords[:,1], ULinear[:Nnodes], cmap=color_map)
-ax1.set_title("$\Psi$")
-# fig.colorbar(contourf1)
+# contourf1 = ax1.tricontourf(coords[:,0], coords[:,1], ULinear[:Nnodes], cmap=color_map)
+# ax1.set_title("$\Psi$")
 
-contourf2 = ax2.tricontourf(coords[:,0], coords[:,1], ULinear[Nnodes:2*Nnodes], cmap=color_map)
-ax2.set_title("$T$")
-# fig.colorbar(contourf2)
+# contourf2 = ax2.tricontourf(coords[:,0], coords[:,1], ULinear[Nnodes:2*Nnodes], cmap=color_map)
+# ax2.set_title("$T$")
 
-contourf3 = ax3.tricontourf(coords[:,0], coords[:,1], ULinear[2*Nnodes:], cmap=color_map)
-ax3.set_title("$C$")
-# fig.colorbar(contourf3)
+# contourf3 = ax3.tricontourf(coords[:,0], coords[:,1], ULinear[2*Nnodes:], cmap=color_map)
+# ax3.set_title("$C$")
 
-fig.suptitle("Linear-Stationary solution")
+# fig.suptitle("Linear-Stationary solution")
 
 # Non-Linear
 def nonLinear_mat(U):
@@ -466,6 +468,7 @@ ax7.set_title("$C$ at $t=%1.3f" %sol.t[0] + "$")
 
 t_index = sol.t.shape[0]//8
 ax3.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,t_index], cmap=color_map, levels=levelsP)
+# ax3.streamplot(coords[:,0], coords[:,1], DyP@U[:Nnodes,t_index], -DxP@U[:Nnodes,t_index])
 ax3.set_title("$\Psi$ at $t=%1.3f" %sol.t[t_index] + "$")
 
 ax4.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,t_index], cmap=color_map, levels=levelsT)

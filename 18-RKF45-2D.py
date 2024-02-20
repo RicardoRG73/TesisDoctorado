@@ -166,7 +166,6 @@ D2, F2 = create_system_K_F(
     dirichlet_boundaries=dirichlet_boundaries,
     interfaces={}
 )
-F2 = F2.toarray()[:,0]
 D2 = D2.toarray()
 
 U0 = np.zeros(F2.shape[0])

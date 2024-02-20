@@ -11,12 +11,13 @@ def nodos_por_color(
         nums=False,
         titulo="Fronteras por color",
         loc='best',
-        legend=True
+        legend=True,
+        s=50
     ):
-    plt.scatter(p[interior,0], p[interior,1], label=label_interior, alpha=alpha)
+    plt.scatter(p[interior,0], p[interior,1], label=label_interior, alpha=alpha, s=s)
     i = 0
     for b in boundaries:
-        plt.scatter(p[b,0], p[b,1], label=labels[i], alpha=alpha)
+        plt.scatter(p[b,0], p[b,1], label=labels[i], alpha=alpha, s=s)
         i += 1
     if nums:
         for i in range(p.shape[0]):

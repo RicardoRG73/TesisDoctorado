@@ -281,7 +281,7 @@ urk = sol.y[1,:]
 plt.plot(t,u, label="Analitic")
 plt.scatter(u0[0],u0[1])
 plt.ylim((0.5,6))
-plt.xlim((-0.1,0.6))
+plt.xlim((-0.1,0.55))
 # FE
 plt.plot(tevals, ufe, label="Forward Euler")
 # BE
