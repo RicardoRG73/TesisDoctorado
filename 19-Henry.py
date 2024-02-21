@@ -3,6 +3,7 @@
 """
 Librerías necesarias
 """
+save_figures = False
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -62,7 +63,7 @@ mesh = cfm.GmshMesh(geometria)
 
 mesh.el_type = 2                            # type of element: 2 = triangle
 mesh.dofs_per_node = 1
-mesh.el_size_factor = 0.05
+mesh.el_size_factor = 0.4
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()   # create the geometry
 verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
@@ -73,7 +74,7 @@ verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
 )
 
 # gráfica de la malla
-cfv.figure(fig_size=(8,5))
+cfv.figure()
 cfv.title('Malla $N=%d' %coords.shape[0] +'$')
 cfv.draw_mesh(
     coords=coords,
@@ -83,7 +84,8 @@ cfv.draw_mesh(
     filled=True
 )
 
-plt.savefig("figuras/Henry/Malla_N="+str(coords.shape[0])+".pdf")
+if save_figures:
+    plt.savefig("figuras/Henry/Malla_N="+str(coords.shape[0])+".pdf")
 
 """
 Identificación de los nodos de frontera
@@ -122,13 +124,14 @@ nodos_por_color(
     interior=interiores,
     label_interior="Nodos Interiores",
     alpha=1,
-    nums=False,
-    legend=True,
+    nums=True,
+    legend=False,
     loc="center"
 )
 plt.axis('equal')
 
-plt.savefig("figuras/Henry/nodos_N="+str(coords.shape[0])+".pdf")
+if save_figures:
+    plt.savefig("figuras/Henry/nodos_N="+str(coords.shape[0])+".pdf")
 
 #%%
 """
@@ -383,7 +386,8 @@ ax2.set_title("$C_0$")
 ax2.set_xlabel("$x$")
 ax2.set_ylabel("$y$")
 
-plt.savefig("figuras/Henry/U0_N="+str(coords.shape[0])+".pdf")
+if save_figures:
+    plt.savefig("figuras/Henry/U0_N="+str(coords.shape[0])+".pdf")
 
 U0 = np.hstack((Psi0, C0))
 
@@ -477,6 +481,57 @@ ax8.set_title("$C$ at $t=%1.3f" %sol.t[3] + "$")
 
 fig.suptitle("Solution with $N=%d" %coords.shape[0] +"$")
 
-plt.savefig("figuras/Henry/U_N="+str(coords.shape[0])+".pdf")
+if save_figures:
+    plt.savefig("figuras/Henry/U_N="+str(coords.shape[0])+".pdf")
+
+# =============================================================================
+# Matrices plots
+# =============================================================================
+
+fig = plt.figure(figsize=(13,5))
+
+ax0 = plt.subplot(121)
+ax1 = plt.subplot(122)
+
+im0 = ax0.imshow(Dypsi.toarray(), cmap="RdBu")
+ax0.grid(False)
+fig.colorbar(im0)
+ax0.set_title("$D_y^\Psi$")
+
+im1 = ax1.imshow(Dypsic.toarray(), cmap="RdBu")
+ax1.grid(False)
+fig.colorbar(im1)
+ax1.set_title("$D_y^{\Psi_C}$")
+
+# plt.savefig("figuras/Henry/Dypsi_vs_Dypsic.pdf")
+
+
+
+fig = plt.figure(figsize=(13,5))
+
+ax0 = plt.subplot(121)
+ax1 = plt.subplot(122)
+
+im0 = ax0.imshow(Dypsi.toarray(), cmap="RdBu")
+ax0.grid(False)
+fig.colorbar(im0)
+ax0.set_title("$D_y^\Psi$")
+
+matrix = Dypsi.toarray()
+
+bb = np.hstack(([0,1], bb))
+matrix[:,bb] = 0
+matrix[bb,bb] = 1
+
+bt = np.hstack(([2,3],bt))
+matrix[:,bt] = 0
+matrix[bt,bt] = 1 
+
+im1 = ax1.imshow(matrix, cmap="RdBu")
+ax1.grid(False)
+fig.colorbar(im1)
+ax1.set_title("$D_y^\Psi$ Dirichlet to right hand side")
+
+# plt.savefig("figuras/Henry/Dypsi_dirich_rhs.pdf") # rhs: right hand side
 
 plt.show()
