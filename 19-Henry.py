@@ -4,6 +4,7 @@
 Librerías necesarias
 """
 save_figures = False
+save_solution = False
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,7 +13,7 @@ from scipy.integrate import solve_ivp
 plt.style.use(["seaborn-v0_8-darkgrid", "seaborn-v0_8-colorblind", "seaborn-v0_8-talk"])
 plt.rcParams["legend.frameon"] = True
 plt.rcParams["legend.shadow"] = True
-plt.rcParams["legend.framealpha"] = 0.6
+plt.rcParams["legend.framealpha"] = 0.1
 mapa_de_color = "plasma"
 
 import calfem.geometry as cfg
@@ -63,7 +64,7 @@ mesh = cfm.GmshMesh(geometria)
 
 mesh.el_type = 2                            # type of element: 2 = triangle
 mesh.dofs_per_node = 1
-mesh.el_size_factor = 0.4
+mesh.el_size_factor = 0.02
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()   # create the geometry
 verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
@@ -398,37 +399,11 @@ sol = solve_ivp(fun, tspan, U0, method="RK45", t_eval=t_eval)
 
 U = sol.y
 
-# Gráfica de la solución en el tiempo final
-# plt.style.use("paper3dplot.mplstyle")
-# fig = plt.figure(figsize=(10,8))
-# ax = plt.axes(projection="3d")
-# ax.plot_trisurf(
-#     coords[:,0],
-#     coords[:,1],
-#     U[:N,-1],
-#     cmap=mapa_de_color,
-#     linewidth=1,
-#     antialiased=False
-# )
-# ax.view_init(azim=-120, elev=50)
-# plt.title("$\Psi$")
-# ax.set_xlabel("$x$")
-# ax.set_ylabel("$y$")
-
-# fig = plt.figure(figsize=(10,8))
-# ax = plt.axes(projection="3d")
-# ax.plot_trisurf(
-#     coords[:,0],
-#     coords[:,1],
-#     U[N:,-1],
-#     cmap=mapa_de_color,
-#     linewidth=1,
-#     antialiased=False
-# )
-# ax.view_init(azim=-120, elev=50)
-# plt.title("$C$")
-# ax.set_xlabel("$x$")
-# ax.set_ylabel("$y$")
+# guardando solucion en archivo
+import pickle
+if save_solution:
+    path = "figuras/Henry/solN" + str(N) + ".pkl"
+    pickle.dump([sol.y, sol.t, coords], open(path, "wb"))
 
 # %%
 
@@ -481,57 +456,54 @@ ax8.set_title("$C$ at $t=%1.3f" %sol.t[3] + "$")
 
 fig.suptitle("Solution with $N=%d" %coords.shape[0] +"$")
 
-if save_figures:
-    plt.savefig("figuras/Henry/U_N="+str(coords.shape[0])+".pdf")
-
 # =============================================================================
 # Matrices plots
 # =============================================================================
 
-fig = plt.figure(figsize=(13,5))
+# fig = plt.figure(figsize=(13,5))
 
-ax0 = plt.subplot(121)
-ax1 = plt.subplot(122)
+# ax0 = plt.subplot(121)
+# ax1 = plt.subplot(122)
 
-im0 = ax0.imshow(Dypsi.toarray(), cmap="RdBu")
-ax0.grid(False)
-fig.colorbar(im0)
-ax0.set_title("$D_y^\Psi$")
+# im0 = ax0.imshow(Dypsi.toarray(), cmap="RdBu")
+# ax0.grid(False)
+# fig.colorbar(im0)
+# ax0.set_title("$D_y^\Psi$")
 
-im1 = ax1.imshow(Dypsic.toarray(), cmap="RdBu")
-ax1.grid(False)
-fig.colorbar(im1)
-ax1.set_title("$D_y^{\Psi_C}$")
+# im1 = ax1.imshow(Dypsic.toarray(), cmap="RdBu")
+# ax1.grid(False)
+# fig.colorbar(im1)
+# ax1.set_title("$D_y^{\Psi_C}$")
 
-# plt.savefig("figuras/Henry/Dypsi_vs_Dypsic.pdf")
+# # plt.savefig("figuras/Henry/Dypsi_vs_Dypsic.pdf")
 
 
 
-fig = plt.figure(figsize=(13,5))
+# fig = plt.figure(figsize=(13,5))
 
-ax0 = plt.subplot(121)
-ax1 = plt.subplot(122)
+# ax0 = plt.subplot(121)
+# ax1 = plt.subplot(122)
 
-im0 = ax0.imshow(Dypsi.toarray(), cmap="RdBu")
-ax0.grid(False)
-fig.colorbar(im0)
-ax0.set_title("$D_y^\Psi$")
+# im0 = ax0.imshow(Dypsi.toarray(), cmap="RdBu")
+# ax0.grid(False)
+# fig.colorbar(im0)
+# ax0.set_title("$D_y^\Psi$")
 
-matrix = Dypsi.toarray()
+# matrix = Dypsi.toarray()
 
-bb = np.hstack(([0,1], bb))
-matrix[:,bb] = 0
-matrix[bb,bb] = 1
+# bb = np.hstack(([0,1], bb))
+# matrix[:,bb] = 0
+# matrix[bb,bb] = 1
 
-bt = np.hstack(([2,3],bt))
-matrix[:,bt] = 0
-matrix[bt,bt] = 1 
+# bt = np.hstack(([2,3],bt))
+# matrix[:,bt] = 0
+# matrix[bt,bt] = 1 
 
-im1 = ax1.imshow(matrix, cmap="RdBu")
-ax1.grid(False)
-fig.colorbar(im1)
-ax1.set_title("$D_y^\Psi$ Dirichlet to right hand side")
+# im1 = ax1.imshow(matrix, cmap="RdBu")
+# ax1.grid(False)
+# fig.colorbar(im1)
+# ax1.set_title("$D_y^\Psi$ Dirichlet to right hand side")
 
-# plt.savefig("figuras/Henry/Dypsi_dirich_rhs.pdf") # rhs: right hand side
+# # plt.savefig("figuras/Henry/Dypsi_dirich_rhs.pdf") # rhs: right hand side
 
 plt.show()
