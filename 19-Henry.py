@@ -64,7 +64,7 @@ mesh = cfm.GmshMesh(geometria)
 
 mesh.el_type = 2                            # type of element: 2 = triangle
 mesh.dofs_per_node = 1
-mesh.el_size_factor = 0.02
+mesh.el_size_factor = 0.1
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()   # create the geometry
 verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
@@ -125,7 +125,7 @@ nodos_por_color(
     interior=interiores,
     label_interior="Nodos Interiores",
     alpha=1,
-    nums=True,
+    nums=False,
     legend=False,
     loc="center"
 )
@@ -400,10 +400,10 @@ sol = solve_ivp(fun, tspan, U0, method="RK45", t_eval=t_eval)
 U = sol.y
 
 # guardando solucion en archivo
-import pickle
 if save_solution:
+    import pickle
     path = "figuras/Henry/solN" + str(N) + ".pkl"
-    pickle.dump([sol.y, sol.t, coords], open(path, "wb"))
+    pickle.dump([sol.y, sol.t, coords, Dxpsi, Dypsi], open(path, "wb"))
 
 # %%
 
