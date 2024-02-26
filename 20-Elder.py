@@ -3,6 +3,8 @@
 Created on Tue Feb 13 10:46:10 2024
 @author: ricardo
 """
+save_figures = False
+save_solution = False
 #%%
 # =============================================================================
 # Libraries
@@ -14,7 +16,7 @@ from scipy.integrate import solve_ivp
 plt.style.use(["seaborn-v0_8-darkgrid", "seaborn-v0_8-colorblind", "seaborn-v0_8-talk"])
 plt.rcParams["legend.frameon"] = True
 plt.rcParams["legend.shadow"] = True
-plt.rcParams["legend.framealpha"] = 0.6
+plt.rcParams["legend.framealpha"] = 0.1
 color_map = "plasma"
 
 import calfem.geometry as cfg
@@ -71,7 +73,7 @@ cfv.draw_geometry(geometry, draw_axis=True)
 # =============================================================================
 mesh = cfm.GmshMesh(
     geometry,
-    el_size_factor=0.02
+    el_size_factor=0.1
 )
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()
@@ -93,7 +95,8 @@ cfv.draw_mesh(
     filled=True
 )
 
-plt.savefig("figuras/Elder/Malla_N="+str(coords.shape[0])+".pdf")
+if save_figures:
+    plt.savefig("figuras/Elder/Malla_N="+str(coords.shape[0])+".pdf")
 
 #%%
 # =============================================================================
@@ -147,7 +150,8 @@ nodos_por_color(
 )
 plt.axis('equal')
 
-plt.savefig("figuras/Elder/nodos_N="+str(coords.shape[0])+".pdf")
+if save_figures:
+    plt.savefig("figuras/Elder/nodos_N="+str(coords.shape[0])+".pdf")
 
 #%%
 # =============================================================================
@@ -303,39 +307,19 @@ Linear_vec = - np.hstack((
     F2C
 ))
 
-ULinear = sp.linalg.spsolve(sp.csr_matrix(Linear_mat), Linear_vec)
-
-fig, (ax1, ax2) = plt.subplots(2,1, sharex=True)
-contourf1 = ax1.tricontourf(coords[:,0], coords[:,1], ULinear[:N], cmap=color_map)
-ax1.axis("equal")
-ax1.set_title("$\Psi$")
-fig.colorbar(contourf1)
-
-contourf2 = ax2.tricontourf(coords[:,0], coords[:,1], ULinear[N:], cmap=color_map)
-ax2.axis("equal")
-ax2.set_title("$C$")
-fig.colorbar(contourf2)
-
-fig.suptitle("Linear-Stationary solution")
-
 # Non-Linear
-def nonLinear_mat(U):
-    term1 = (DyPC @ U[:N]) * (DxC @ U[N:])
-    term2 = (DxPC @ U[:N]) * (DyC @ U[N:])
+def nonLinear(U):
+    term1 = (DyPC @ U[:N] + FyPC) * (DxC @ U[N:] + FxC)
+    term2 = (DxPC @ U[:N] + FxPC) * (DyC @ U[N:] + FyC)
     vec = np.hstack((
         zeros_vec,
         - term1 + term2
     ))
     return vec
 
-nonLinear_vec = - np.hstack((
-    zeros_vec,
-    (FyPC * FxC) - (FxPC * FyC)
-))
-
 def rhs(t,U):
     vec = Linear_mat @ U + Linear_vec
-    vec += nonLinear_mat(U) + nonLinear_vec
+    vec += nonLinear(U)
     return vec
 
 #%%
@@ -357,6 +341,11 @@ sol = solve_ivp(rhs, tspan, U0, t_eval=t_eval)
 
 U = sol.y
 times = sol.t
+
+if save_solution:
+    import pickle
+    path = "figuras/Elder/solN" + str(N) + ".pkl"
+    pickle.dump([U, times, coords, DxP, DyP], open(path, "wb"))
 
 # %%
 # =============================================================================
@@ -421,7 +410,5 @@ ax10.tricontourf(coords[:,0], coords[:,1], U[N:,4], cmap=color_map, levels=level
 ax10.set_title("$C$ at $t=%1.3f" %sol.t[4] + "$")
 
 fig.suptitle("Solution with $N=%d" %coords.shape[0] +"$")
-
-plt.savefig("figuras/Elder/U_N="+str(coords.shape[0])+".pdf")
 
 plt.show()

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 #%%
-"""
-Librerías necesarias
-"""
+# =============================================================================
+# Librerías necesarias
+# =============================================================================
 save_figures = False
 save_solution = False
 
@@ -23,9 +23,10 @@ import calfem.vis_mpl as cfv
 from graficas import nodos_por_color
 from GFDM import create_system_K_F
 
-"""
-Geometría
-"""
+#%%
+# =============================================================================
+# Geometría
+# =============================================================================
 
 geometria = cfg.Geometry()
 
@@ -55,11 +56,10 @@ cfv.figure(fig_size=(8,5))
 cfv.title('Geometría')
 cfv.draw_geometry(geometria, font_size=16, draw_axis=True)
 
-
-"""
-Malla
-"""
-
+#%%
+# =============================================================================
+# Malla
+# =============================================================================
 mesh = cfm.GmshMesh(geometria)
 
 mesh.el_type = 2                            # type of element: 2 = triangle
@@ -75,7 +75,7 @@ verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
 )
 
 # gráfica de la malla
-cfv.figure()
+plt.figure(figsize=(7,4))
 cfv.title('Malla $N=%d' %coords.shape[0] +'$')
 cfv.draw_mesh(
     coords=coords,
@@ -88,13 +88,14 @@ cfv.draw_mesh(
 if save_figures:
     plt.savefig("figuras/Henry/Malla_N="+str(coords.shape[0])+".pdf")
 
-"""
-Identificación de los nodos de frontera
-bl: left
-br: right
-bb: bottom
-bt: top
-"""
+#%%
+# =============================================================================
+# Identificación de los nodos de frontera
+# bl: left
+# br: right
+# bb: bottom
+# bt: top
+# =============================================================================
 
 bl = np.asarray(bdofs[left]) - 1
 bl = np.setdiff1d(bl, [0,3])
@@ -117,7 +118,7 @@ etiquetas = (
     "Esquinas"
 )
 
-plt.figure()
+plt.figure(figsize=(7,4))
 nodos_por_color(
     boundaries=fronteras,
     p=coords,
@@ -127,7 +128,8 @@ nodos_por_color(
     alpha=1,
     nums=False,
     legend=False,
-    loc="center"
+    loc="center",
+    s=5
 )
 plt.axis('equal')
 
@@ -135,17 +137,18 @@ if save_figures:
     plt.savefig("figuras/Henry/nodos_N="+str(coords.shape[0])+".pdf")
 
 #%%
-"""
-Parámetros del problema
-"""
+# =============================================================================
+# Parámetros del problema
+# =============================================================================
 a = 0.2637
 b = 0.1
 k = lambda p: 1         # difusividad
 f = lambda p: 0         # fuente
 
-"""
-Matrices D para la función de flujo \Psi
-"""
+#%%
+# =============================================================================
+# Matrices D para la función de flujo \Psi
+# =============================================================================
 # Definición de las condiciones de frontera y nodos interiores
 Psit = lambda p: 1
 Psib = lambda p: 0
@@ -202,10 +205,10 @@ Dypsi, Fypsi = create_system_K_F(
 )
 # Dypsi = Dypsi.toarray()
 
-
-"""
-Matrices D para la concentración C
-"""
+#%%
+# =============================================================================
+# Matrices D para la concentración C
+# =============================================================================
 # Definición de las condiciones de frontera
 Cl = lambda p: 0
 Cr = lambda p: 1
@@ -233,7 +236,6 @@ D2c, F2c = create_system_K_F(
     dirichlet_boundaries=fronteas_dirichlet,
     neumann_boundaries=fronteras_neumann
 )
-# D2c = D2c.toarray()
 
 Dxc, Fxc = create_system_K_F(
     p=coords,
@@ -244,7 +246,6 @@ Dxc, Fxc = create_system_K_F(
     dirichlet_boundaries=fronteas_dirichlet,
     neumann_boundaries=fronteras_neumann
 )
-# Dxc = Dxc.toarray()
 
 Dyc, Fyc = create_system_K_F(
     p=coords,
@@ -255,13 +256,12 @@ Dyc, Fyc = create_system_K_F(
     dirichlet_boundaries=fronteas_dirichlet,
     neumann_boundaries=fronteras_neumann
 )
-# Dyc = Dyc.toarray()
 
-
-"""
-Ensamble del IVP
-"""
-#  modificaciones para no afectar las condiciones de frontera
+#%%
+# =============================================================================
+# Ensamble del IVP
+# =============================================================================
+# modificaciones para no afectar las condiciones de frontera
 import scipy.sparse as sp
 
 Dxcpsi = Dxc.copy()
@@ -290,7 +290,7 @@ Fxpsic[Boundaries] = 0
 # print("--------------")
 # print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
 # print("|| %1.2e || %1.2e || %1.2e || %1.2e ||" %(
-#         np.linalg.cond(Dxc),np.linalg.cond(Dyc),np.linalg.cond(Dxpsi),np.linalg.cond(Dypsi)
+#         np.linalg.cond(Dxc.toarray()),np.linalg.cond(Dyc.toarray()),np.linalg.cond(Dxpsi.toarray()),np.linalg.cond(Dypsi.toarray())
 #     )
 # )
 # print("=============")
@@ -298,7 +298,7 @@ Fxpsic[Boundaries] = 0
 # print("--------------")
 # print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
 # print("|| %1.2f || %1.2f || %1.2f || %1.2f ||" %(
-#         np.max(np.diag(Dxc)),np.max(np.diag(Dyc)),np.max(np.diag(Dxpsi)),np.max(np.diag(Dypsi))
+#         np.max(np.diag(Dxc.toarray())),np.max(np.diag(Dyc.toarray())),np.max(np.diag(Dxpsi.toarray())),np.max(np.diag(Dypsi.toarray()))
 #     )
 # )
 # print("=============")
@@ -306,7 +306,7 @@ Fxpsic[Boundaries] = 0
 # print("--------------")
 # print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
 # print("|| %1.2f || %1.2f || %1.2f || %1.2f ||" %(
-#         np.min(np.diag(Dxc)),np.min(np.diag(Dyc)),np.min(np.diag(Dxpsi)),np.min(np.diag(Dypsi))
+#         np.min(np.diag(Dxc.toarray())),np.min(np.diag(Dyc.toarray())),np.min(np.diag(Dxpsi.toarray())),np.min(np.diag(Dypsi.toarray()))
 #     )
 # )
 # print("=============\n")
@@ -330,22 +330,16 @@ Fl = np.hstack((
 
 # Parte no lineal (Vector B)
 def B(U):
-    term1 = (Dypsic@U[:N]) * (Dxc@U[N:])
-    term2 = (Dxpsic@U[:N]) * (Dyc@U[N:])
-    vec2 = -1/b * (term1 - term2) 
+    term1 = (Dypsic@U[:N] - Fypsic) * (Dxc@U[N:] - Fxc)
+    term2 = (Dxpsic@U[:N] - Fxpsic) * (Dyc@U[N:] - Fyc)
+    vec2 = -1/b * (term1 - term2)
     vec1 = np.zeros(N)
     vec = np.hstack((vec1, vec2))
     return vec
 
-# Valores conocidos no lineales (vector Fn)
-Fn = np.hstack((
-    np.zeros(N),
-    - 1/b * (Fypsic*Fxc - Fxpsic*Fyc)
-))
-
 # Acoplamiento del lado derecho en la función anónima fun
 
-fun = lambda t,U: A@U + Fl + B(U) + Fn
+fun = lambda t,U: A@U + Fl + B(U)
 
 # Condiciones iniciales
 C0 = np.zeros(N)
@@ -375,7 +369,7 @@ i = 3
 C0[i] = Cl(coords[i,:])
 Psi0[i] = Psit(coords[i,:])
 
-fig = plt.figure()
+fig = plt.figure(figsize=(8,4))
 ax = plt.subplot(1, 2, 1, projection="3d")
 ax.plot_trisurf(coords[:,0],coords[:,1],Psi0, cmap=mapa_de_color, edgecolor="k")
 ax.set_title("$\Psi_0$")
@@ -392,7 +386,10 @@ if save_figures:
 
 U0 = np.hstack((Psi0, C0))
 
+#%%
+# =============================================================================
 # Solución del IVP
+# =============================================================================
 tspan = [0,0.21]             # intervalo de solución
 t_eval = [0, 0.01, 0.05, 0.21]
 sol = solve_ivp(fun, tspan, U0, method="RK45", t_eval=t_eval)
@@ -406,7 +403,9 @@ if save_solution:
     pickle.dump([sol.y, sol.t, coords, Dxpsi, Dypsi], open(path, "wb"))
 
 # %%
-
+# =============================================================================
+# Solution plot at different times
+# =============================================================================
 levelsP = 20
 levelsC = 20
 

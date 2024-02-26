@@ -5,6 +5,7 @@ Created on Wed Feb 21 17:09:55 2024
 
 @author: ricardo
 """
+save_figures=True
 # =============================================================================
 # Libraries
 # =============================================================================
@@ -125,6 +126,9 @@ ax7.set_title("$\Psi$ at $t=%1.3f$" %tc[3])
 ax8.tricontourf(pc[:,0], pc[:,1], Uc[Nc:,3], cmap=mapa_de_color, levels=levelsC)
 ax8.set_title("$C$ at $t=%1.3f$" %tc[3])
 
+if save_figures:
+    plt.savefig("figuras/Henry/Psi_C_diff_t.pdf")
+
 # =============================================================================
 # Psi and C t=0.21 with different N
 # =============================================================================
@@ -163,6 +167,9 @@ ax5.set_title("$\Psi$, $N=%d$" %Nc)
 
 ax6.tricontourf(pc[:,0], pc[:,1], Uc[Nc:,-1], cmap=mapa_de_color, levels=levelsP)
 ax6.set_title("$C$, $N=%d$" %Nc)
+
+if save_figures:
+    plt.savefig("figuras/Henry/Psi_C_diff_N.pdf")
 
 # =============================================================================
 # Psi and C t=0.21 with different N, Pinder version (a=0.2637, b=0.035)
@@ -206,6 +213,8 @@ ax5.set_title("$\Psi$, $N=%d$" %PNc)
 ax6.tricontourf(Ppc[:,0], Ppc[:,1], PUc[PNc:,-1], cmap=mapa_de_color, levels=levelsP)
 ax6.set_title("$C$, $N=%d$" %PNc)
 
+if save_figures:
+    plt.savefig("figuras/Henry/Psi_C_diff_N_Pinder.pdf")
 
 # =============================================================================
 # Isochlor C=0.5, Pinder and Modified versions
@@ -254,6 +263,9 @@ plt.axis("equal")
 plt.legend()
 plt.title("Isochlor $C=0.5$")
 
+if save_figures:
+    plt.savefig("figuras/Henry/C=0.5_versions.pdf")
+
 # All isochlors C=0.5
 fig, axes= plt.subplots(1,2, sharey="row", sharex="col", constrained_layout=True)
 
@@ -276,6 +288,9 @@ ax2.plot(lineMd[:,0], lineMd[:,1], "--", label="$N=2748$")
 ax2.plot(lineMc[:,0], lineMc[:,1], label="$N=5969$")
 ax2.legend()
 ax2.set_title("Modified $(a=0.1315, b=0.2)$")
+
+if save_figures:
+    plt.savefig("figuras/Henry/C=0.5_diff_N.pdf")
 
 # =============================================================================
 # Xtoe position table, Original, Pinder, Modified
@@ -315,12 +330,19 @@ tabla = {
 }
 
 df = pandas.DataFrame(tabla)
+print("   XToe Position \n _________________________")
 print(df)
 
 # =============================================================================
 # Stationary Psi, C, vel, Original, Pinder, Modified
 # =============================================================================
-fig, axes = plt.subplots(3, 3, sharex="col", sharey="row", figsize=(10,6), constrained_layout=True)
+from scipy.interpolate import griddata
+
+x = np.linspace(0, 2, 41)
+y = np.linspace(0, 1, 21)
+x,y = np.meshgrid(x,y)
+
+fig, axes = plt.subplots(3, 3, sharex="col", sharey="row", figsize=(15,9), constrained_layout=True)
 
 ax0 = axes[0,0]
 ax1 = axes[1,0]
@@ -342,21 +364,36 @@ ax6.set_aspect("equal", "box")
 ax7.set_aspect("equal", "box")
 ax8.set_aspect("equal", "box")
 
-bt = np.array([3, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50])
-corrector = np.ones(Na)
-corrector[bt] = 0
+# bt = np.array([3, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50])
+# corrector = np.ones(Na)
+# corrector[bt] = 0
 
 ax0.tricontourf(pa[:,0], pa[:,1], Ua[:Na,-1], cmap=mapa_de_color, levels=levelsP)
 ax1.tricontourf(pa[:,0], pa[:,1], Ua[Na:,-1], cmap=mapa_de_color, levels=levelsC)
-ax2.quiver(pa[:,0], pa[:,1], Dypsia @ Ua[:Na, -1], -Dxpsia @ Ua[:Na, -1] * corrector, color="tab:blue")
+vx = Dypsia @ Ua[:Na,3] #* corrector
+vy = -Dxpsia @ Ua[:Na,3] #* corrector
+velx = griddata(pa, vx, (x,y))
+vely = griddata(pa, vy, (x,y))
+norm_vel = np.sqrt(velx**2 + vely**2)
+ax2.streamplot(x, y, velx, vely, color=norm_vel, cmap="plasma", density=0.7)
 
 ax3.tricontourf(Ppa[:,0], Ppa[:,1], PUa[:PNa,-1], cmap=mapa_de_color, levels=levelsP)
 ax4.tricontourf(Ppa[:,0], Ppa[:,1], PUa[PNa:,-1], cmap=mapa_de_color, levels=levelsC)
-ax5.quiver(Ppa[:,0], Ppa[:,1], PDypsia @ PUa[:PNa, -1], -PDxpsia @ PUa[:PNa, -1] * corrector, color="tab:blue")
+vx = PDypsia @ PUa[:PNa,3] #* corrector
+vy = -PDxpsia @ PUa[:PNa,3] #* corrector
+velx = griddata(Ppa, vx, (x,y))
+vely = griddata(Ppa, vy, (x,y))
+norm_vel = np.sqrt(velx**2 + vely**2)
+ax5.streamplot(x, y, velx, vely, color=norm_vel, cmap="plasma", density=0.7)
 
 ax6.tricontourf(Mpa[:,0], Mpa[:,1], MUa[:MNa,-1], cmap=mapa_de_color, levels=levelsP)
 ax7.tricontourf(Mpa[:,0], Mpa[:,1], MUa[MNa:,-1], cmap=mapa_de_color, levels=levelsC)
-ax8.quiver(Mpa[:,0], Mpa[:,1], MDypsia @ MUa[:MNa, -1], -MDxpsia @ MUa[:MNa, -1] * corrector, color="tab:blue")
+vx = MDypsia @ MUa[:MNa,3] #* corrector
+vy = -MDxpsia @ MUa[:MNa,3] #* corrector
+velx = griddata(Mpa, vx, (x,y))
+vely = griddata(Mpa, vy, (x,y))
+norm_vel = np.sqrt(velx**2 + vely**2)
+ax8.streamplot(x, y, velx, vely, color=norm_vel, cmap="plasma", density=0.7)
 
 ax0.set_title("$\Psi$ Original")
 ax1.set_title("$C$ Original")
@@ -371,3 +408,6 @@ ax7.set_title("$C$ Modified")
 ax8.set_title("Velocity Modified")
 
 fig.suptitle("Solution at $t=0.21$ for different values $a$, $b$, using $N=274$", fontsize=20)
+
+if save_figures:
+    plt.savefig("figuras/Henry/stationary_versions.pdf")
