@@ -70,6 +70,11 @@ cfv.draw_geometry(geometry, draw_axis=True)
 #%%
 # =============================================================================
 # Mesh
+# | el_szie_factor |     N    |
+# |      0.1       |    533   |
+# |      0.06      |   1430   |
+# |      0.03      |   5453   |
+# |      0.027     |   6820   |
 # =============================================================================
 mesh = cfm.GmshMesh(
     geometry,
@@ -85,7 +90,7 @@ verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
 )
 
 # plotting
-cfv.figure()
+cfv.figure(fig_size=(15,4))
 cfv.title('Malla $N=%d' %coords.shape[0] +'$')
 cfv.draw_mesh(
     coords=coords,
@@ -135,7 +140,7 @@ etiquetas = (
     "Esquinas"
 )
 
-plt.figure()
+plt.figure(figsize=(15,4))
 nodos_por_color(
     boundaries=boundaries_tuple,
     p=coords,
@@ -145,7 +150,7 @@ nodos_por_color(
     alpha=1,
     nums=False,
     legend=True,
-    loc="lower center",
+    loc="center",
     s=10
 )
 plt.axis('equal')

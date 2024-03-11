@@ -5,7 +5,7 @@ Created on Wed Feb 21 17:09:55 2024
 
 @author: ricardo
 """
-save_figures=True
+save_figures=False
 # =============================================================================
 # Libraries
 # =============================================================================
@@ -364,34 +364,30 @@ ax6.set_aspect("equal", "box")
 ax7.set_aspect("equal", "box")
 ax8.set_aspect("equal", "box")
 
-# bt = np.array([3, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50])
-# corrector = np.ones(Na)
-# corrector[bt] = 0
-
-ax0.tricontourf(pa[:,0], pa[:,1], Ua[:Na,-1], cmap=mapa_de_color, levels=levelsP)
-ax1.tricontourf(pa[:,0], pa[:,1], Ua[Na:,-1], cmap=mapa_de_color, levels=levelsC)
-vx = Dypsia @ Ua[:Na,3] #* corrector
-vy = -Dxpsia @ Ua[:Na,3] #* corrector
-velx = griddata(pa, vx, (x,y))
-vely = griddata(pa, vy, (x,y))
+ax0.tricontourf(pc[:,0], pc[:,1], Uc[:Nc,-1], cmap=mapa_de_color, levels=levelsP)
+ax1.tricontourf(pc[:,0], pc[:,1], Uc[Nc:,-1], cmap=mapa_de_color, levels=levelsC)
+vx = Dypsic @ Uc[:Nc,3]
+vy = -Dxpsic @ Uc[:Nc,3]
+velx = griddata(pc, vx, (x,y))
+vely = griddata(pc, vy, (x,y))
 norm_vel = np.sqrt(velx**2 + vely**2)
 ax2.streamplot(x, y, velx, vely, color=norm_vel, cmap="plasma", density=0.7)
 
-ax3.tricontourf(Ppa[:,0], Ppa[:,1], PUa[:PNa,-1], cmap=mapa_de_color, levels=levelsP)
-ax4.tricontourf(Ppa[:,0], Ppa[:,1], PUa[PNa:,-1], cmap=mapa_de_color, levels=levelsC)
-vx = PDypsia @ PUa[:PNa,3] #* corrector
-vy = -PDxpsia @ PUa[:PNa,3] #* corrector
-velx = griddata(Ppa, vx, (x,y))
-vely = griddata(Ppa, vy, (x,y))
+ax3.tricontourf(Ppc[:,0], Ppc[:,1], PUc[:PNc,-1], cmap=mapa_de_color, levels=levelsP)
+ax4.tricontourf(Ppc[:,0], Ppc[:,1], PUc[PNc:,-1], cmap=mapa_de_color, levels=levelsC)
+vx = PDypsic @ PUc[:PNc,3]
+vy = -PDxpsic @ PUc[:PNc,3]
+velx = griddata(Ppc, vx, (x,y))
+vely = griddata(Ppc, vy, (x,y))
 norm_vel = np.sqrt(velx**2 + vely**2)
 ax5.streamplot(x, y, velx, vely, color=norm_vel, cmap="plasma", density=0.7)
 
-ax6.tricontourf(Mpa[:,0], Mpa[:,1], MUa[:MNa,-1], cmap=mapa_de_color, levels=levelsP)
-ax7.tricontourf(Mpa[:,0], Mpa[:,1], MUa[MNa:,-1], cmap=mapa_de_color, levels=levelsC)
-vx = MDypsia @ MUa[:MNa,3] #* corrector
-vy = -MDxpsia @ MUa[:MNa,3] #* corrector
-velx = griddata(Mpa, vx, (x,y))
-vely = griddata(Mpa, vy, (x,y))
+ax6.tricontourf(Mpc[:,0], Mpc[:,1], MUc[:MNc,-1], cmap=mapa_de_color, levels=levelsP)
+ax7.tricontourf(Mpc[:,0], Mpc[:,1], MUc[MNc:,-1], cmap=mapa_de_color, levels=levelsC)
+vx = MDypsic @ MUc[:MNc,3]
+vy = -MDxpsic @ MUc[:MNc,3]
+velx = griddata(Mpc, vx, (x,y))
+vely = griddata(Mpc, vy, (x,y))
 norm_vel = np.sqrt(velx**2 + vely**2)
 ax8.streamplot(x, y, velx, vely, color=norm_vel, cmap="plasma", density=0.7)
 
@@ -407,7 +403,7 @@ ax6.set_title("$\Psi$ Modified")
 ax7.set_title("$C$ Modified")
 ax8.set_title("Velocity Modified")
 
-fig.suptitle("Solution at $t=0.21$ for different values $a$, $b$, using $N=274$", fontsize=20)
+fig.suptitle("Solution at $t=0.21$ for different values $a$, $b$, using $N=%d$" %Nc, fontsize=20)
 
 if save_figures:
     plt.savefig("figuras/Henry/stationary_versions.pdf")
