@@ -24,13 +24,13 @@ color_map = "plasma"
 # =============================================================================
 # Load files
 # =============================================================================
-path = "figuras/CNDD/solN976.pkl"
+path = "figuras/CNDD/solN451.pkl"
 Ua,ta,pa,DxPa,DyPa = pickle.load(open(path, "rb"))
-Na = 976
+Na = 451
 
-path = "figuras/CNDD/solN3751.pkl"
+path = "figuras/CNDD/solN976.pkl"
 Ub,tb,pb,DxPb,DyPb = pickle.load(open(path, "rb"))
-Nb = 3751
+Nb = 976
 
 #%%
 # =============================================================================
@@ -133,9 +133,9 @@ fig.colorbar(lines)
 
 plt.show()
 
-# # =============================================================================
-# # T, C, Vel. Stationary
-# # =============================================================================
+# =============================================================================
+# T, C, Vel. Stationary
+# =============================================================================
 # fig, axes = plt.subplots(3,1,sharex="col",sharey="row", figsize=(5,10), constrained_layout=True)
 
 # fig.suptitle("Solution at $t=%1.2f$ using $N=%d$" %(tb[-1], Nb), fontsize=20)
