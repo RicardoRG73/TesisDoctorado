@@ -78,7 +78,7 @@ cfv.draw_geometry(geometry, draw_axis=True)
 # =============================================================================
 mesh = cfm.GmshMesh(
     geometry,
-    el_size_factor=0.1
+    el_size_factor=0.06
 )
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()

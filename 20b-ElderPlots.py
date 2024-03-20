@@ -51,7 +51,7 @@ Nd = 6820
 levelsP = 16
 levelsC = 9
 
-fig, axes = plt.subplots(5, 2, sharex="col", sharey="row", figsize=(9,8), constrained_layout=True)
+fig, axes = plt.subplots(5, 2, sharex="col", sharey="row", figsize=(10,8), constrained_layout=True)
 
 fig.suptitle("Solution at different times with $N=%d$" %Nd, fontsize=20)
 
@@ -77,35 +77,45 @@ ax8.set_aspect("equal", "box")
 ax9.set_aspect("equal", "box")
 ax10.set_aspect("equal", "box")
 
-ax1.tricontourf(pd[:,0], pd[:,1], Ud[:Nd,0], cmap=mapa_de_color, levels=levelsP)
+lines = ax1.tricontourf(pd[:,0], pd[:,1], Ud[:Nd,0], cmap=mapa_de_color, levels=levelsP)
 ax1.set_title("$\Psi$ at $t=%1.3f$" %td[0])
+fig.colorbar(lines)
 
-ax2.tricontourf(pd[:,0], pd[:,1], Ud[Nd:,0], cmap=mapa_de_color, levels=levelsC)
+lines = ax2.tricontourf(pd[:,0], pd[:,1], Ud[Nd:,0], cmap=mapa_de_color, levels=levelsC)
 ax2.set_title("$C$ at $t=%1.3f$" %td[0])
+fig.colorbar(lines)
 
-ax3.tricontourf(pd[:,0], pd[:,1], Ud[:Nd,1], cmap=mapa_de_color, levels=levelsP)
+lines = ax3.tricontourf(pd[:,0], pd[:,1], Ud[:Nd,1], cmap=mapa_de_color, levels=levelsP)
 ax3.set_title("$\Psi$ at $t=%1.3f$" %td[1])
+fig.colorbar(lines)
 
-ax4.tricontourf(pd[:,0], pd[:,1], Ud[Nd:,1], cmap=mapa_de_color, levels=levelsC)
+lines = ax4.tricontourf(pd[:,0], pd[:,1], Ud[Nd:,1], cmap=mapa_de_color, levels=levelsC)
 ax4.set_title("$C$ at $t=%1.3f$" %td[1])
+fig.colorbar(lines)
 
-ax5.tricontourf(pd[:,0], pd[:,1], Ud[:Nd,2], cmap=mapa_de_color, levels=levelsP)
+lines = ax5.tricontourf(pd[:,0], pd[:,1], Ud[:Nd,2], cmap=mapa_de_color, levels=levelsP)
 ax5.set_title("$\Psi$ at $t=%1.3f$" %td[2])
+fig.colorbar(lines)
 
-ax6.tricontourf(pd[:,0], pd[:,1], Ud[Nd:,2], cmap=mapa_de_color, levels=levelsC)
+lines = ax6.tricontourf(pd[:,0], pd[:,1], Ud[Nd:,2], cmap=mapa_de_color, levels=levelsC)
 ax6.set_title("$C$ at $t=%1.3f$" %td[2])
+fig.colorbar(lines)
 
-ax7.tricontourf(pd[:,0], pd[:,1], Ud[:Nd,3], cmap=mapa_de_color, levels=levelsP)
+lines = ax7.tricontourf(pd[:,0], pd[:,1], Ud[:Nd,3], cmap=mapa_de_color, levels=levelsP)
 ax7.set_title("$\Psi$ at $t=%1.3f$" %td[3])
+fig.colorbar(lines)
 
-ax8.tricontourf(pd[:,0], pd[:,1], Ud[Nd:,3], cmap=mapa_de_color, levels=levelsC)
+lines = ax8.tricontourf(pd[:,0], pd[:,1], Ud[Nd:,3], cmap=mapa_de_color, levels=levelsC)
 ax8.set_title("$C$ at $t=%1.3f$" %td[3])
+fig.colorbar(lines)
 
-ax9.tricontourf(pd[:,0], pd[:,1], Ud[:Nd,4], cmap=mapa_de_color, levels=levelsP)
+lines = ax9.tricontourf(pd[:,0], pd[:,1], Ud[:Nd,4], cmap=mapa_de_color, levels=levelsP)
 ax9.set_title("$\Psi$ at $t=%1.3f$" %td[4])
+fig.colorbar(lines)
 
-ax10.tricontourf(pd[:,0], pd[:,1], Ud[Nd:,4], cmap=mapa_de_color, levels=levelsC)
+lines = ax10.tricontourf(pd[:,0], pd[:,1], Ud[Nd:,4], cmap=mapa_de_color, levels=levelsC)
 ax10.set_title("$C$ at $t=%1.3f$" %td[4])
+fig.colorbar(lines)
 
 if save_figures:
     plt.savefig("figuras/Elder/Psi_C_diff_t.pdf")
@@ -152,7 +162,7 @@ if save_figures:
 # =============================================================================
 # Psi, C, vel, stationary t=1.239, N=6820
 # =============================================================================
-fig, axes = plt.subplots(3,1,sharex="col",sharey="row", figsize=(9,8),constrained_layout=True)
+fig, axes = plt.subplots(3,1,sharex="col",sharey="row", figsize=(11,8),constrained_layout=True)
 
 fig.suptitle("Solution at $t=%1.3f$ using $N=%d$" %(td[4], Nd), fontsize=20)
 

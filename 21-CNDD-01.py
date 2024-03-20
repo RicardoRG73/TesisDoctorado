@@ -4,6 +4,8 @@ Created on Wed Feb 14 10:19:29 2024
 
 @author: ricardo
 """
+save_figures = False
+save_solution = False
 # =============================================================================
 # Libraries
 # =============================================================================
@@ -34,7 +36,7 @@ HL = 0.25
 length = height / HL
 
 Degrees = np.pi / 180
-th = -30 * Degrees
+th = 30 * Degrees
 
 length_x = length * np.cos(th)
 length_y = length * np.sin(th)
@@ -72,10 +74,14 @@ cfv.draw_geometry(geometry, draw_axis=True)
 #%%
 # =============================================================================
 # Mesh
+# | el_size_factor |   N   |
+# |    0.02        |   976 |
+# |    0.013       |  2341 |
+# |    0.01        |  3751 |
 # =============================================================================
 mesh = cfm.GmshMesh(
     geometry,
-    el_size_factor=0.06
+    el_size_factor=0.03
 )
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()
@@ -96,6 +102,8 @@ cfv.draw_mesh(
     el_type=mesh.el_type,
     filled=True
 )
+if save_figures:
+    plt.savefig("figuras/CNDD/mallaN=%d.pdf" %coords.shape[0])
 
 #%%
 # =============================================================================
@@ -123,7 +131,7 @@ etiquetas = (
     "Top"
 )
 
-plt.figure()
+plt.figure(figsize=(8,7))
 nodos_por_color(
     boundaries=boundaries_tuple,
     p=coords,
@@ -133,9 +141,12 @@ nodos_por_color(
     alpha=1,
     nums=False,
     legend=True,
-    loc="best"
+    loc="best",
+    s=10,
 )
 plt.axis('equal')
+if save_figures:
+    plt.savefig("figuras/CNDD/nodosN=%d.pdf" %coords.shape[0])
 
 #%%
 # =============================================================================
@@ -149,6 +160,8 @@ Le = 0.8
 N = 2
 k = lambda p: 1
 f = lambda p: 0
+
+tfinal = 0.13
 
 L2 = np.array([0,0,0,2,0,2])
 Lx = np.array([0,1,0,0,0,0])
@@ -340,76 +353,50 @@ FxP_noBound = FxP.copy()
 FxP_noBound[Boundaries] = 0
 
 # Linear
-Linear_mat = sp.vstack((
+A = sp.vstack((
     sp.hstack((D2P, Ra*DxT_noBound, (Ra*N)*DxC_noBound)),
     sp.hstack((zeros_mat, D2T, zeros_mat)),
     sp.hstack((zeros_mat, zeros_mat, D2C))
 ))
 
-Linear_vec = - np.hstack((
-    F2P + Ra*FxT_noBound + (Ra*N)*FxC_noBound,
-    F2T,
-    F2C
-))
-
-# ULinear = sp.linalg.spsolve(Linear_mat, Linear_vec)
-
-# fig, axes = plt.subplots(2,2, sharex="col", sharey="row")
-
-# ax0 = axes[0,0]
-# ax1 = axes[0,1]
-# ax2 = axes[1,0]
-# ax3 = axes[1,1]
-
-# ax0.set_aspect("equal", "box")
-# ax1.set_aspect("equal", "box")
-# ax2.set_aspect("equal", "box")
-# ax3.set_aspect("equal", "box")
-
-# meshplot = ax0.triplot(coords[:,0], coords[:,1], faces)
-# ax0.set_title("Mesh with $%d$ nodes" %Nnodes)
-
-# contourf1 = ax1.tricontourf(coords[:,0], coords[:,1], ULinear[:Nnodes], cmap=color_map)
-# ax1.set_title("$\Psi$")
-
-# contourf2 = ax2.tricontourf(coords[:,0], coords[:,1], ULinear[Nnodes:2*Nnodes], cmap=color_map)
-# ax2.set_title("$T$")
-
-# contourf3 = ax3.tricontourf(coords[:,0], coords[:,1], ULinear[2*Nnodes:], cmap=color_map)
-# ax3.set_title("$C$")
-
-# fig.suptitle("Linear-Stationary solution")
-
 # Non-Linear
-def nonLinear_mat(U):
-    Tterm1 = (DyP_noBound @ U[:Nnodes]) * (DxT @ U[Nnodes:2*Nnodes])
-    Tterm2 = (DxP_noBound @ U[:Nnodes]) * (DyT @ U[Nnodes:2*Nnodes])
+def B(U):
+    Tterm1 = (
+        DyP_noBound @ U[:Nnodes] - FyP_noBound
+    ) * (
+        DxT @ U[Nnodes:2*Nnodes] - FxT
+    )
+    Tterm2 = (
+        DxP_noBound @ U[:Nnodes] - FxP_noBound
+    ) * (
+        DyT @ U[Nnodes:2*Nnodes] - FyT
+    )
     
-    Cterm1 = (DyP_noBound @ U[:Nnodes]) * (DxC @ U[2*Nnodes:])
-    Cterm2 = (DxP_noBound @ U[:Nnodes]) * (DyC @ U[2*Nnodes:])
+    Cterm1 = (
+        DyP_noBound @ U[:Nnodes] - FyP_noBound
+    ) * (
+        DxC @ U[2*Nnodes:] - FxC
+    )
+    Cterm2 = (
+        DxP_noBound @ U[:Nnodes] - FxP_noBound
+    ) * (
+        DyC @ U[2*Nnodes:] - FyC
+    )
+    
     vec = np.hstack((
-        zeros_vec,
-        - Tterm1 + Tterm2,
-        Le * (- Cterm1 + Cterm2)
+        - F2P - Ra*FxT_noBound - (Ra*N)*FxC_noBound,
+        - F2T - Tterm1 + Tterm2,
+        - F2C + Le * (- Cterm1 + Cterm2)
     ))
     return vec
 
-nonLinear_vec = - np.hstack((
-    zeros_vec,
-    (FyP_noBound * FxT) - (FxP_noBound * FyT),
-    Le * ( (FyP_noBound * FxC) - (FxP_noBound * FyC) )
-))
-
 def rhs(t,U):
-    vec = Linear_mat @ U + Linear_vec
-    vec += nonLinear_mat(U) + nonLinear_vec
-    return vec
+    return A @ U + B(U)
 
 #%%
 # =============================================================================
 # Solving IVP with RKF45
 # =============================================================================
-tfinal = 1.2
 tspan = [0, tfinal]
 
 P0 = zeros_vec.copy()
@@ -426,6 +413,11 @@ sol = solve_ivp(rhs, tspan, U0)
 U = sol.y
 times = sol.t
 
+if save_solution:
+    import pickle
+    path = "figuras/CNDD/solN%d.pkl" %coords.shape[0]
+    pickle.dump([U, times, coords, DxP, DyP], open(path, "wb"))
+
 # %%
 # =============================================================================
 # Plotting solution
@@ -435,7 +427,7 @@ levelsP = 20
 levelsT = 20
 levelsC = 20
 
-fig, axes = plt.subplots(3, 3, sharex="col", sharey="row")
+fig, axes = plt.subplots(3, 3, sharex="col", sharey="row", figsize=(13,10), constrained_layout=True)
 
 ax1 = axes[0,0]
 ax2 = axes[0,1]
@@ -457,35 +449,44 @@ ax7.set_aspect("equal", "box")
 ax8.set_aspect("equal", "box")
 ax9.set_aspect("equal", "box")
 
-ax1.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,0], cmap=color_map, levels=levelsP)
+lines = ax1.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,0], cmap=color_map, levels=levelsP)
 ax1.set_title("$\Psi$ at $t=%1.3f" %sol.t[0] + "$")
+fig.colorbar(lines)
 
-ax2.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,0], cmap=color_map, levels=levelsT)
+lines = ax2.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,0], cmap=color_map, levels=levelsT)
 ax2.set_title("$T$ at $t=%1.3f" %sol.t[0] + "$")
+fig.colorbar(lines)
 
-ax7.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,0], cmap=color_map, levels=levelsC)
+lines = ax7.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,0], cmap=color_map, levels=levelsC)
 ax7.set_title("$C$ at $t=%1.3f" %sol.t[0] + "$")
+fig.colorbar(lines)
 
 t_index = sol.t.shape[0]//8
-ax3.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,t_index], cmap=color_map, levels=levelsP)
+lines = ax3.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,t_index], cmap=color_map, levels=levelsP)
 # ax3.streamplot(coords[:,0], coords[:,1], DyP@U[:Nnodes,t_index], -DxP@U[:Nnodes,t_index])
 ax3.set_title("$\Psi$ at $t=%1.3f" %sol.t[t_index] + "$")
+fig.colorbar(lines)
 
-ax4.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,t_index], cmap=color_map, levels=levelsT)
+lines = ax4.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,t_index], cmap=color_map, levels=levelsT)
 ax4.set_title("$T$ at $t=%1.3f" %sol.t[t_index] + "$")
+fig.colorbar(lines)
 
-ax8.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,t_index], cmap=color_map, levels=levelsC)
+lines = ax8.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,t_index], cmap=color_map, levels=levelsC)
 ax8.set_title("$C$ at $t=%1.3f" %sol.t[t_index] + "$")
+fig.colorbar(lines)
 
-ax5.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,-1], cmap=color_map, levels=levelsP)
+lines = ax5.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,-1], cmap=color_map, levels=levelsP)
 ax5.set_title("$\Psi$ at $t=%1.3f" %sol.t[-1] + "$")
+fig.colorbar(lines)
 
-ax6.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,-1], cmap=color_map, levels=levelsT)
+lines = ax6.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,-1], cmap=color_map, levels=levelsT)
 ax6.set_title("$T$ at $t=%1.3f" %sol.t[-1] + "$")
+fig.colorbar(lines)
 
-ax9.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,-1], cmap=color_map, levels=levelsC)
+lines = ax9.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,-1], cmap=color_map, levels=levelsC)
 ax9.set_title("$C$ at $t=%1.3f" %sol.t[-1] + "$")
+fig.colorbar(lines)
 
-fig.suptitle("Solution with $N=%d" %coords.shape[0] +"$")
+fig.suptitle("Solution with $N=%d$" %coords.shape[0], fontsize=20)
 
 plt.show()
