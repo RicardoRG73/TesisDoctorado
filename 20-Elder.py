@@ -78,7 +78,7 @@ cfv.draw_geometry(geometry, draw_axis=True)
 # =============================================================================
 mesh = cfm.GmshMesh(
     geometry,
-    el_size_factor=0.06
+    el_size_factor=0.1
 )
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()
@@ -203,7 +203,6 @@ D2P, F2P = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-# D2P = D2P.toarray()
 
 DxP, FxP = create_system_K_F(
     p=coords,
@@ -214,7 +213,6 @@ DxP, FxP = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-# DxP.toarray()
 
 DyP, FyP = create_system_K_F(
     p=coords,
@@ -225,7 +223,6 @@ DyP, FyP = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-# DyP.toarray()
 
 #%%
 # =============================================================================
@@ -250,7 +247,6 @@ D2C, F2C = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-# D2C = D2C.toarray()
 
 DxC, FxC = create_system_K_F(
     p=coords,
@@ -261,7 +257,6 @@ DxC, FxC = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-# DxC = DxC.toarray()
 
 DyC, FyC = create_system_K_F(
     p=coords,
@@ -272,7 +267,33 @@ DyC, FyC = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-# DyC = DyC.toarray()
+
+#%%
+# =============================================================================
+# Condition numbers
+# =============================================================================
+N = coords.shape[0]
+print("N = ", N)
+print("\n=============================================================")
+print("Condition Number")
+print("---------------------------------------------------------------")
+print("   DxP",
+      "DyP",
+      "D2P",
+      "DxC",
+      "DyC",
+      "D2C",
+      sep="   ||    "
+)
+print("%1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e " %(
+    np.linalg.cond(DxP.toarray()),
+    np.linalg.cond(DyP.toarray()),
+    np.linalg.cond(D2P.toarray()),    
+    np.linalg.cond(DxC.toarray()),
+    np.linalg.cond(DyC.toarray()),
+    np.linalg.cond(D2C.toarray())
+))
+print("==============================================================\n")
 
 #%%
 # =============================================================================

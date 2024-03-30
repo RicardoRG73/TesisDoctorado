@@ -102,6 +102,9 @@ fig.colorbar(lines)
 
 fig.suptitle(r"Solution with $N_{\text{nodes}}=%d$" %pb.shape[0], fontsize=20)
 
+if save_figures:
+    plt.savefig("figuras/CNDD/cndd_diff_t_N976.pdf")
+
 # =============================================================================
 # C at t=0.05 using different N
 # =============================================================================
@@ -110,7 +113,7 @@ levels = [0, 0.2, 0.6, 1]
 fig, axes = plt.subplots(1,2,sharex="col",sharey="row", figsize=(9,4), constrained_layout=True)
 
 t_wanted = 0.03
-fig.suptitle("$C$ at $t=%1.2f$ for different N" %t_wanted, fontsize=20)
+fig.suptitle(r"$C$ at $t=%1.2f$ for different $N_{\text{nodes}}$" %t_wanted, fontsize=20)
 
 ax0 = axes[0]
 ax1 = axes[1] 
@@ -121,17 +124,20 @@ ax1.set_aspect("equal", "box")
 t_index = np.argmin((ta - t_wanted)**2)
 
 lines = ax0.tricontourf(pa[:,0], pa[:,1], Ua[2*Na:,t_index], cmap=color_map, levels=levels)
-ax0.set_title("$N=%d$, $t=%1.2f$" %(Na,ta[t_index]))
+ax0.set_title(r"$N_{\text{nodes}}=%d$, $t=%1.2f$" %(Na,ta[t_index]))
 fig.colorbar(lines)
 
 t_index = np.argmin((tb - t_wanted)**2)
 
 lines = ax1.tricontourf(pb[:,0], pb[:,1], Ub[2*Nb:,t_index], cmap=color_map, levels=levels)
-ax1.set_title("$N=%d$, $t=%1.2f$" %(Nb,tb[t_index]))
+ax1.set_title(r"$N_{\text{nodes}}=%d$, $t=%1.2f$" %(Nb,tb[t_index]))
 fig.colorbar(lines)
 
 
-plt.show()
+if save_figures:
+    plt.savefig("figuras/CNDD/cndd_diff_N_isochlores.pdf")
+
+
 
 # =============================================================================
 # T, C, Vel. Stationary
@@ -158,6 +164,7 @@ plt.show()
 
 # vx = DyPb @ Ub[:Nb,4]
 # vy = -DxPb @ Ub[:Nb,4]
+# # plt.quiver(pb[:,0], pb[:,1],vx,vy)
 # norm_v = np.sqrt(vx**2 + vy**2)
 # lineas = ax2.tricontourf(pb[:,0], pb[:,1], norm_v, cmap=color_map, levels=levelsC)
 # fig.colorbar(lineas)
@@ -172,3 +179,4 @@ plt.show()
 # lineas = ax2.streamplot(x, y, velx, vely, color=norm_vel, cmap="plasma")
 # ax2.set_title("Velocity")
 
+plt.show()

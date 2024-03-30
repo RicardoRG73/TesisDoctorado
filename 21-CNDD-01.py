@@ -4,8 +4,8 @@ Created on Wed Feb 14 10:19:29 2024
 
 @author: ricardo
 """
-save_figures = True
-save_solution = True
+save_figures = False
+save_solution = False
 # =============================================================================
 # Libraries
 # =============================================================================
@@ -160,7 +160,7 @@ N = 2
 k = lambda p: 1
 f = lambda p: 0
 
-tfinal = 0.13
+tend = 0.13
 
 L2 = np.array([0,0,0,2,0,2])
 Lx = np.array([0,1,0,0,0,0])
@@ -204,7 +204,6 @@ D2P, F2P = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-# D2P = D2P.toarray()
 
 DxP, FxP = create_system_K_F(
     p=coords,
@@ -215,7 +214,6 @@ DxP, FxP = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-# DxP.toarray()
 
 DyP, FyP = create_system_K_F(
     p=coords,
@@ -226,7 +224,6 @@ DyP, FyP = create_system_K_F(
     dirichlet_boundaries=PDirich,
     neumann_boundaries=PNeu
 )
-# DyP.toarray()
 
 #%%
 # =============================================================================
@@ -249,7 +246,6 @@ D2C, F2C = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-# D2C = D2C.toarray()
 
 DxC, FxC = create_system_K_F(
     p=coords,
@@ -260,7 +256,6 @@ DxC, FxC = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-# DxC = DxC.toarray()
 
 DyC, FyC = create_system_K_F(
     p=coords,
@@ -271,7 +266,6 @@ DyC, FyC = create_system_K_F(
     dirichlet_boundaries=CDirich,
     neumann_boundaries=CNeu
 )
-# DyC = DyC.toarray()
 
 #%%
 # =============================================================================
@@ -294,7 +288,6 @@ D2T, F2T = create_system_K_F(
     dirichlet_boundaries=TDirich,
     neumann_boundaries=TNeu
 )
-# D2T = D2T.toarray()
 
 DxT, FxT = create_system_K_F(
     p=coords,
@@ -305,7 +298,6 @@ DxT, FxT = create_system_K_F(
     dirichlet_boundaries=TDirich,
     neumann_boundaries=TNeu
 )
-# DxT = DxT.toarray()
 
 DyT, FyT = create_system_K_F(
     p=coords,
@@ -316,7 +308,39 @@ DyT, FyT = create_system_K_F(
     dirichlet_boundaries=TDirich,
     neumann_boundaries=TNeu
 )
-# DyT = DyT.toarray()
+
+#%%
+# =============================================================================
+# Condition numbers
+# =============================================================================
+N = coords.shape[0]
+print("N = ", N)
+print("\n=============================================================")
+print("Condition Number")
+print("---------------------------------------------------------------")
+print("   DxP",
+      "DyP",
+      "D2P",
+      "DxT",
+      "DyT",
+      "D2T",
+      "DxC",
+      "DyC",
+      "D2C",
+      sep="   ||    "
+)
+print("%1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e " %(
+    np.linalg.cond(DxP.toarray()),
+    np.linalg.cond(DyP.toarray()),
+    np.linalg.cond(D2P.toarray()),    
+    np.linalg.cond(DxT.toarray()),
+    np.linalg.cond(DyT.toarray()),
+    np.linalg.cond(D2T.toarray()),
+    np.linalg.cond(DxC.toarray()),
+    np.linalg.cond(DyC.toarray()),
+    np.linalg.cond(D2C.toarray()),
+))
+print("==============================================================\n")
 
 #%%
 # =============================================================================
@@ -396,7 +420,7 @@ def rhs(t,U):
 # =============================================================================
 # Solving IVP with RKF45
 # =============================================================================
-tspan = [0, tfinal]
+tspan = [0, tend]
 
 P0 = zeros_vec.copy()
 T0 = zeros_vec.copy()

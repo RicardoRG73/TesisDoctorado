@@ -59,12 +59,17 @@ cfv.draw_geometry(geometria, font_size=16, draw_axis=True)
 #%%
 # =============================================================================
 # Malla
+# | el_size_factor |   N   |
+# |     0.1        |  274  |
+# |     0.05       |  998  |
+# |     0.03       | 2748  |
+# |     0.02       | 5969  |
 # =============================================================================
 mesh = cfm.GmshMesh(geometria)
 
 mesh.el_type = 2                            # type of element: 2 = triangle
 mesh.dofs_per_node = 1
-mesh.el_size_factor = 0.1
+mesh.el_size_factor = 0.02
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()   # create the geometry
 verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
@@ -285,34 +290,30 @@ Fxpsic = Fxpsi.copy()
 Dxpsic[Boundaries,:] = 0
 Fxpsic[Boundaries] = 0
 
-# print("\n=============")
-# print("Condition Number")
-# print("--------------")
-# print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
-# print("|| %1.2e || %1.2e || %1.2e || %1.2e ||" %(
-#         np.linalg.cond(Dxc.toarray()),np.linalg.cond(Dyc.toarray()),np.linalg.cond(Dxpsi.toarray()),np.linalg.cond(Dypsi.toarray())
-#     )
-# )
-# print("=============")
-# print("Max value in diag")
-# print("--------------")
-# print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
-# print("|| %1.2f || %1.2f || %1.2f || %1.2f ||" %(
-#         np.max(np.diag(Dxc.toarray())),np.max(np.diag(Dyc.toarray())),np.max(np.diag(Dxpsi.toarray())),np.max(np.diag(Dypsi.toarray()))
-#     )
-# )
-# print("=============")
-# print("Min value in diag")
-# print("--------------")
-# print("||   Dxc    ||   Dyc   ||   Dxpsi   ||   Dypsi  ||")
-# print("|| %1.2f || %1.2f || %1.2f || %1.2f ||" %(
-#         np.min(np.diag(Dxc.toarray())),np.min(np.diag(Dyc.toarray())),np.min(np.diag(Dxpsi.toarray())),np.min(np.diag(Dypsi.toarray()))
-#     )
-# )
-# print("=============\n")
+print("\n=============================================================")
+print("Condition Number")
+print("---------------------------------------------------------------")
+print("   DxP",
+      "DyP",
+      "D2P",
+      "DxC",
+      "DyC",
+      "D2C",
+      sep="   ||    "
+)
+print("%1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e " %(
+    np.linalg.cond(Dxpsi.toarray()),
+    np.linalg.cond(Dypsi.toarray()),
+    np.linalg.cond(D2psi.toarray()),    
+    np.linalg.cond(Dxc.toarray()),
+    np.linalg.cond(Dyc.toarray()),
+    np.linalg.cond(D2c.toarray())
+))
+print("==============================================================\n")
 
 # Parte lineal del sistema (matriz A)
 N = coords.shape[0]
+print("N = ", N)
 A = sp.vstack((
     sp.hstack((
         D2psi, -1/a * Dxcpsi
