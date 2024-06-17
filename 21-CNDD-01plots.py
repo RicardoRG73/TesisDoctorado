@@ -5,7 +5,7 @@ Created on Tue Mar 19 14:46:36 2024
 
 @author: ricardo
 """
-save_figures = True
+save_figures = False
 #%%
 # =============================================================================
 # Libraries
