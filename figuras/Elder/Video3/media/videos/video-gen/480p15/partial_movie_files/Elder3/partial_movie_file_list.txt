@@ -1,2 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:H:/Mi unidad/01 Ricardo-Doctorado/Tesis/TesisDoctorado/figuras/Elder/Video3/media/videos/video-gen/480p15/partial_movie_files/Elder3/3591353732_829392373_3363132643.mp4'

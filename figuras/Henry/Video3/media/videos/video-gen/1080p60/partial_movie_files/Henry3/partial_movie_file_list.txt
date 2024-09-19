@@ -1,5 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:G:/Mi unidad/01 Ricardo-Doctorado/Tesis/TesisDoctorado/figuras/Henry/Video3/media/videos/video-gen/1080p60/partial_movie_files/Henry3/uncached_00000.mp4'
-file 'file:G:/Mi unidad/01 Ricardo-Doctorado/Tesis/TesisDoctorado/figuras/Henry/Video3/media/videos/video-gen/1080p60/partial_movie_files/Henry3/uncached_00001.mp4'
-file 'file:G:/Mi unidad/01 Ricardo-Doctorado/Tesis/TesisDoctorado/figuras/Henry/Video3/media/videos/video-gen/1080p60/partial_movie_files/Henry3/uncached_00002.mp4'
-file 'file:G:/Mi unidad/01 Ricardo-Doctorado/Tesis/TesisDoctorado/figuras/Henry/Video3/media/videos/video-gen/1080p60/partial_movie_files/Henry3/uncached_00003.mp4'
