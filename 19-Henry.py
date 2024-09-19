@@ -69,7 +69,7 @@ mesh = cfm.GmshMesh(geometria)
 
 mesh.el_type = 2                            # type of element: 2 = triangle
 mesh.dofs_per_node = 1
-mesh.el_size_factor = 0.02
+mesh.el_size_factor = 0.1
 
 coords, edof, dofs, bdofs, elementmarkers = mesh.create()   # create the geometry
 verts, faces, vertices_per_face, is_3d = cfv.ce2vf(
@@ -144,9 +144,12 @@ if save_figures:
 #%%
 # =============================================================================
 # Parámetros del problema
+# Henry: a=0.2637, b=0.1
+# Pinder: a=0.2637, b=0.035
+# Modified: a=0.1315, b=0.2
 # =============================================================================
 a = 0.2637
-b = 0.1
+b = 0.035
 k = lambda p: 1         # difusividad
 f = lambda p: 0         # fuente
 
@@ -290,26 +293,26 @@ Fxpsic = Fxpsi.copy()
 Dxpsic[Boundaries,:] = 0
 Fxpsic[Boundaries] = 0
 
-print("\n=============================================================")
-print("Condition Number")
-print("---------------------------------------------------------------")
-print("   DxP",
-      "DyP",
-      "D2P",
-      "DxC",
-      "DyC",
-      "D2C",
-      sep="   ||    "
-)
-print("%1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e " %(
-    np.linalg.cond(Dxpsi.toarray()),
-    np.linalg.cond(Dypsi.toarray()),
-    np.linalg.cond(D2psi.toarray()),    
-    np.linalg.cond(Dxc.toarray()),
-    np.linalg.cond(Dyc.toarray()),
-    np.linalg.cond(D2c.toarray())
-))
-print("==============================================================\n")
+# print("\n=============================================================")
+# print("Condition Number")
+# print("---------------------------------------------------------------")
+# print("   DxP",
+#       "DyP",
+#       "D2P",
+#       "DxC",
+#       "DyC",
+#       "D2C",
+#       sep="   ||    "
+# )
+# print("%1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e " %(
+#     np.linalg.cond(Dxpsi.toarray()),
+#     np.linalg.cond(Dypsi.toarray()),
+#     np.linalg.cond(D2psi.toarray()),    
+#     np.linalg.cond(Dxc.toarray()),
+#     np.linalg.cond(Dyc.toarray()),
+#     np.linalg.cond(D2c.toarray())
+# ))
+# print("==============================================================\n")
 
 # Parte lineal del sistema (matriz A)
 N = coords.shape[0]
@@ -391,16 +394,17 @@ U0 = np.hstack((Psi0, C0))
 # =============================================================================
 # Solución del IVP
 # =============================================================================
-tspan = [0,0.21]             # intervalo de solución
-t_eval = [0, 0.01, 0.05, 0.21]
-sol = solve_ivp(fun, tspan, U0, method="RK45", t_eval=t_eval)
+t_final = 0.35 #0.21
+tspan = [0, t_final]             # intervalo de solución
+#t_eval = np.arange(0,0.21,0.0002)
+sol = solve_ivp(fun, tspan, U0, method="RK45")#, t_eval=t_eval)
 
 U = sol.y
 
 # guardando solucion en archivo
 if save_solution:
     import pickle
-    path = "figuras/Henry/solN" + str(N) + ".pkl"
+    path = "figuras/Henry/PindersolN" + str(N) + "_medium_time.pkl"
     pickle.dump([sol.y, sol.t, coords, Dxpsi, Dypsi], open(path, "wb"))
 
 # %%
@@ -430,31 +434,33 @@ ax6.set_aspect("equal", "box")
 ax7.set_aspect("equal", "box")
 ax8.set_aspect("equal", "box")
 
+Nt = sol.t.shape[0]
+
 ax1.tricontourf(coords[:,0], coords[:,1], U[:N,0], cmap=mapa_de_color, levels=levelsP)
-ax1.set_title("$\Psi$ at $t=%1.3f" %sol.t[0] + "$")
+ax1.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[0] + "$")
 
 ax2.tricontourf(coords[:,0], coords[:,1], U[N:,0], cmap=mapa_de_color, levels=levelsC)
-ax2.set_title("$C$ at $t=%1.3f" %sol.t[0] + "$")
+ax2.set_title(r"$C$ at $t=%1.3f" %sol.t[0] + "$")
 
-ax3.tricontourf(coords[:,0], coords[:,1], U[:N,1], cmap=mapa_de_color, levels=levelsP)
-ax3.set_title("$\Psi$ at $t=%1.3f" %sol.t[1] + "$")
+ax3.tricontourf(coords[:,0], coords[:,1], U[:N,Nt//3], cmap=mapa_de_color, levels=levelsP)
+ax3.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[Nt//3] + "$")
 
-ax4.tricontourf(coords[:,0], coords[:,1], U[N:,1], cmap=mapa_de_color, levels=levelsC)
-ax4.set_title("$C$ at $t=%1.3f" %sol.t[1] + "$")
+ax4.tricontourf(coords[:,0], coords[:,1], U[N:,Nt//3], cmap=mapa_de_color, levels=levelsC)
+ax4.set_title(r"$C$ at $t=%1.3f" %sol.t[Nt//3] + "$")
 
-ax5.tricontourf(coords[:,0], coords[:,1], U[:N,2], cmap=mapa_de_color, levels=levelsP)
-ax5.set_title("$\Psi$ at $t=%1.3f" %sol.t[2] + "$")
+ax5.tricontourf(coords[:,0], coords[:,1], U[:N,Nt*2//3], cmap=mapa_de_color, levels=levelsP)
+ax5.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[Nt*2//3] + "$")
 
-ax6.tricontourf(coords[:,0], coords[:,1], U[N:,2], cmap=mapa_de_color, levels=levelsC)
-ax6.set_title("$C$ at $t=%1.3f" %sol.t[2] + "$")
+ax6.tricontourf(coords[:,0], coords[:,1], U[N:,Nt*2//3], cmap=mapa_de_color, levels=levelsC)
+ax6.set_title(r"$C$ at $t=%1.3f" %sol.t[Nt*2//3] + "$")
 
-ax7.tricontourf(coords[:,0], coords[:,1], U[:N,3], cmap=mapa_de_color, levels=levelsP)
-ax7.set_title("$\Psi$ at $t=%1.3f" %sol.t[3] + "$")
+ax7.tricontourf(coords[:,0], coords[:,1], U[:N,-1], cmap=mapa_de_color, levels=levelsP)
+ax7.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[-1] + "$")
 
-ax8.tricontourf(coords[:,0], coords[:,1], U[N:,3], cmap=mapa_de_color, levels=levelsC)
-ax8.set_title("$C$ at $t=%1.3f" %sol.t[3] + "$")
+ax8.tricontourf(coords[:,0], coords[:,1], U[N:,-1], cmap=mapa_de_color, levels=levelsC)
+ax8.set_title(r"$C$ at $t=%1.3f" %sol.t[-1] + "$")
 
-fig.suptitle("Solution with $N=%d" %coords.shape[0] +"$")
+fig.suptitle(r"Solution with $N=%d" %coords.shape[0] +"$")
 
 # =============================================================================
 # Matrices plots

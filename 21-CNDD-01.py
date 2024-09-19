@@ -75,6 +75,7 @@ cfv.draw_geometry(geometry, draw_axis=True)
 # =============================================================================
 # Mesh
 # | el_size_factor |   N   |
+# |    0.03        |   451 |
 # |    0.02        |   976 |
 # |    0.013       |  2341 |
 # |    0.01        |  3751 |
@@ -160,8 +161,6 @@ Le = 0.8
 N = 2
 k = lambda p: 1
 f = lambda p: 0
-
-tfinal = 0.13
 
 L2 = np.array([0,0,0,2,0,2])
 Lx = np.array([0,1,0,0,0,0])
@@ -398,39 +397,40 @@ def rhs(t,U):
 # Condition numbers
 # =============================================================================
 N = coords.shape[0]
-print("N = ", N)
-print("\n=============================================================")
-print("Condition Number")
-print("---------------------------------------------------------------")
-print("   DxP",
-      "DyP",
-      "D2P",
-      "DxT",
-      "DyT",
-      "D2T",
-      "DxC",
-      "DyC",
-      "D2C",
-      sep="   ||    "
-)
-print("%1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e " %(
-    np.linalg.cond(DxP.toarray()),
-    np.linalg.cond(DyP.toarray()),
-    np.linalg.cond(D2P.toarray()),
-    np.linalg.cond(DxT.toarray()),
-    np.linalg.cond(DyT.toarray()),
-    np.linalg.cond(D2T.toarray()),
-    np.linalg.cond(DxC.toarray()),
-    np.linalg.cond(DyC.toarray()),
-    np.linalg.cond(D2C.toarray()),
-))
-print("==============================================================\n")
+# print("N = ", N)
+# print("\n=============================================================")
+# print("Condition Number")
+# print("---------------------------------------------------------------")
+# print("   DxP",
+#       "DyP",
+#       "D2P",
+#       "DxT",
+#       "DyT",
+#       "D2T",
+#       "DxC",
+#       "DyC",
+#       "D2C",
+#       sep="   ||    "
+# )
+# print("%1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e " %(
+#     np.linalg.cond(DxP.toarray()),
+#     np.linalg.cond(DyP.toarray()),
+#     np.linalg.cond(D2P.toarray()),
+#     np.linalg.cond(DxT.toarray()),
+#     np.linalg.cond(DyT.toarray()),
+#     np.linalg.cond(D2T.toarray()),
+#     np.linalg.cond(DxC.toarray()),
+#     np.linalg.cond(DyC.toarray()),
+#     np.linalg.cond(D2C.toarray()),
+# ))
+# print("==============================================================\n")
 
 
 #%%
 # =============================================================================
 # Solving IVP with RKF45
 # =============================================================================
+tfinal = 0.3
 tspan = [0, tfinal]
 
 P0 = zeros_vec.copy()
@@ -449,7 +449,7 @@ times = sol.t
 
 if save_solution:
     import pickle
-    path = "figuras/CNDD/solN%d.pkl" %coords.shape[0]
+    path = "figuras/CNDD/solN%d_long_time.pkl" %coords.shape[0]
     pickle.dump([U, times, coords, DxP, DyP], open(path, "wb"))
 
 # %%
@@ -483,44 +483,44 @@ ax7.set_aspect("equal", "box")
 ax8.set_aspect("equal", "box")
 ax9.set_aspect("equal", "box")
 
-lines = ax1.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,0], cmap=color_map, levels=levelsP)
-ax1.set_title("$\Psi$ at $t=%1.3f" %sol.t[0] + "$")
-fig.colorbar(lines)
+cont = ax1.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,0], cmap=color_map, levels=levelsP)
+ax1.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[0] + "$")
+fig.colorbar(cont)
 
-lines = ax2.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,0], cmap=color_map, levels=levelsT)
-ax2.set_title("$T$ at $t=%1.3f" %sol.t[0] + "$")
-fig.colorbar(lines)
+cont = ax2.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,0], cmap=color_map, levels=levelsT)
+ax2.set_title(r"$T$ at $t=%1.3f" %sol.t[0] + "$")
+fig.colorbar(cont)
 
-lines = ax7.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,0], cmap=color_map, levels=levelsC)
-ax7.set_title("$C$ at $t=%1.3f" %sol.t[0] + "$")
-fig.colorbar(lines)
+cont = ax7.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,0], cmap=color_map, levels=levelsC)
+ax7.set_title(r"$C$ at $t=%1.3f" %sol.t[0] + "$")
+fig.colorbar(cont)
 
 t_index = sol.t.shape[0]//8
-lines = ax3.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,t_index], cmap=color_map, levels=levelsP)
+cont = ax3.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,t_index], cmap=color_map, levels=levelsP)
 # ax3.streamplot(coords[:,0], coords[:,1], DyP@U[:Nnodes,t_index], -DxP@U[:Nnodes,t_index])
-ax3.set_title("$\Psi$ at $t=%1.3f" %sol.t[t_index] + "$")
-fig.colorbar(lines)
+ax3.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[t_index] + "$")
+fig.colorbar(cont)
 
-lines = ax4.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,t_index], cmap=color_map, levels=levelsT)
-ax4.set_title("$T$ at $t=%1.3f" %sol.t[t_index] + "$")
-fig.colorbar(lines)
+cont = ax4.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,t_index], cmap=color_map, levels=levelsT)
+ax4.set_title(r"$T$ at $t=%1.3f" %sol.t[t_index] + "$")
+fig.colorbar(cont)
 
-lines = ax8.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,t_index], cmap=color_map, levels=levelsC)
-ax8.set_title("$C$ at $t=%1.3f" %sol.t[t_index] + "$")
-fig.colorbar(lines)
+cont = ax8.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,t_index], cmap=color_map, levels=levelsC)
+ax8.set_title(r"$C$ at $t=%1.3f" %sol.t[t_index] + "$")
+fig.colorbar(cont)
 
-lines = ax5.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,-1], cmap=color_map, levels=levelsP)
-ax5.set_title("$\Psi$ at $t=%1.3f" %sol.t[-1] + "$")
-fig.colorbar(lines)
+cont = ax5.tricontourf(coords[:,0], coords[:,1], U[:Nnodes,-1], cmap=color_map, levels=levelsP)
+ax5.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[-1] + "$")
+fig.colorbar(cont)
 
-lines = ax6.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,-1], cmap=color_map, levels=levelsT)
-ax6.set_title("$T$ at $t=%1.3f" %sol.t[-1] + "$")
-fig.colorbar(lines)
+cont = ax6.tricontourf(coords[:,0], coords[:,1], U[Nnodes:2*Nnodes,-1], cmap=color_map, levels=levelsT)
+ax6.set_title(r"$T$ at $t=%1.3f" %sol.t[-1] + "$")
+fig.colorbar(cont)
 
-lines = ax9.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,-1], cmap=color_map, levels=levelsC)
-ax9.set_title("$C$ at $t=%1.3f" %sol.t[-1] + "$")
-fig.colorbar(lines)
+cont = ax9.tricontourf(coords[:,0], coords[:,1], U[2*Nnodes:,-1], cmap=color_map, levels=levelsC)
+ax9.set_title(r"$C$ at $t=%1.3f" %sol.t[-1] + "$")
+fig.colorbar(cont)
 
-fig.suptitle("Solution with $N=%d$" %coords.shape[0], fontsize=20)
+fig.suptitle(r"Solution with $N=%d$" %coords.shape[0], fontsize=20)
 
 plt.show()

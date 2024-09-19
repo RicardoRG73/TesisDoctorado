@@ -23,6 +23,7 @@ for i in range(vy.shape[0]):
     vely[i] = vy[i] * UP
 
 vel = velx + vely
+vel = vel / np.max(np.abs(vel)) * 2
 
 p[:,0] *= 2
 p[:,0] -= 2
@@ -47,7 +48,12 @@ config.frame_width = 4
 class Henry4(Scene):
     def construct(self):
         delta_space = 0.3
-        stream_lines = StreamLines(vel_fun, x_range=[-2,2,delta_space], y_range=[-1,1,delta_space])
+        stream_lines = StreamLines(
+            vel_fun,
+            x_range=[-2,2,delta_space],
+            y_range=[-1,1,delta_space],
+            stroke_width=0.8
+        )
         self.add(stream_lines)
-        stream_lines.start_animation(warm_up=False, flow_speed=1, time_width=0.75)
+        stream_lines.start_animation(warm_up=False, flow_speed=1.5, time_width=0.75)
         self.wait(stream_lines.virtual_time / stream_lines.flow_speed)

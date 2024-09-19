@@ -1,0 +1,5 @@
+# This file is used internally by FFMPEG.
+file 'file:G:/Mi unidad/01 Ricardo-Doctorado/Tesis/TesisDoctorado/figuras/Henry/Video1/media/videos/video-gen/1080p60/partial_movie_files/Henry1/3529212410_634017564_2612702374.mp4'
+file 'file:G:/Mi unidad/01 Ricardo-Doctorado/Tesis/TesisDoctorado/figuras/Henry/Video1/media/videos/video-gen/1080p60/partial_movie_files/Henry1/3040924799_1141282389_2310358431.mp4'
+file 'file:G:/Mi unidad/01 Ricardo-Doctorado/Tesis/TesisDoctorado/figuras/Henry/Video1/media/videos/video-gen/1080p60/partial_movie_files/Henry1/3040924799_1141282389_4021487010.mp4'
+file 'file:G:/Mi unidad/01 Ricardo-Doctorado/Tesis/TesisDoctorado/figuras/Henry/Video1/media/videos/video-gen/1080p60/partial_movie_files/Henry1/3040924799_1141282389_2522414800.mp4'

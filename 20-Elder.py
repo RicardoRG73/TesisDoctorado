@@ -272,28 +272,28 @@ DyC, FyC = create_system_K_F(
 # =============================================================================
 # Condition numbers
 # =============================================================================
-N = coords.shape[0]
-print("N = ", N)
-print("\n=============================================================")
-print("Condition Number")
-print("---------------------------------------------------------------")
-print("   DxP",
-      "DyP",
-      "D2P",
-      "DxC",
-      "DyC",
-      "D2C",
-      sep="   ||    "
-)
-print("%1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e " %(
-    np.linalg.cond(DxP.toarray()),
-    np.linalg.cond(DyP.toarray()),
-    np.linalg.cond(D2P.toarray()),    
-    np.linalg.cond(DxC.toarray()),
-    np.linalg.cond(DyC.toarray()),
-    np.linalg.cond(D2C.toarray())
-))
-print("==============================================================\n")
+# N = coords.shape[0]
+# print("N = ", N)
+# print("\n=============================================================")
+# print("Condition Number")
+# print("---------------------------------------------------------------")
+# print("   DxP",
+#       "DyP",
+#       "D2P",
+#       "DxC",
+#       "DyC",
+#       "D2C",
+#       sep="   ||    "
+# )
+# print("%1.2e || %1.2e || %1.2e || %1.2e || %1.2e || %1.2e " %(
+#     np.linalg.cond(DxP.toarray()),
+#     np.linalg.cond(DyP.toarray()),
+#     np.linalg.cond(D2P.toarray()),    
+#     np.linalg.cond(DxC.toarray()),
+#     np.linalg.cond(DyC.toarray()),
+#     np.linalg.cond(D2C.toarray())
+# ))
+# print("==============================================================\n")
 
 #%%
 # =============================================================================
@@ -352,9 +352,8 @@ def rhs(t,U):
 # =============================================================================
 # Solving IVP with RKF45
 # =============================================================================
-tfinal = 1.239
+tfinal = 0.2
 tspan = [0, tfinal]
-t_eval = [0.000, 0.015, 0.050, 0.100, 1.239]
 
 P0 = zeros_vec.copy()
 C0 = zeros_vec.copy()
@@ -363,14 +362,14 @@ C0[btb] = 1
 
 U0 = np.hstack((P0,C0))
 
-sol = solve_ivp(rhs, tspan, U0, t_eval=t_eval)
+sol = solve_ivp(rhs, tspan, U0)
 
 U = sol.y
 times = sol.t
 
 if save_solution:
     import pickle
-    path = "figuras/Elder/solN" + str(N) + ".pkl"
+    path = "figuras/Elder/solN" + str(N) + "_medium_time.pkl"
     pickle.dump([U, times, coords, DxP, DyP], open(path, "wb"))
 
 # %%
@@ -405,36 +404,38 @@ ax8.set_aspect("equal", "box")
 ax9.set_aspect("equal", "box")
 ax10.set_aspect("equal", "box")
 
+Nt = sol.t.shape[0]
+
 ax1.tricontourf(coords[:,0], coords[:,1], U[:N,0], cmap=color_map, levels=levelsP)
-ax1.set_title("$\Psi$ at $t=%1.3f" %sol.t[0] + "$")
+ax1.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[0] + "$")
 
 ax2.tricontourf(coords[:,0], coords[:,1], U[N:,0], cmap=color_map, levels=levelsC)
-ax2.set_title("$C$ at $t=%1.3f" %sol.t[0] + "$")
+ax2.set_title(r"$C$ at $t=%1.3f" %sol.t[0] + "$")
 
-ax3.tricontourf(coords[:,0], coords[:,1], U[:N,1], cmap=color_map, levels=levelsP)
-ax3.set_title("$\Psi$ at $t=%1.3f" %sol.t[1] + "$")
+ax3.tricontourf(coords[:,0], coords[:,1], U[:N,Nt//4], cmap=color_map, levels=levelsP)
+ax3.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[Nt//4] + "$")
 
-ax4.tricontourf(coords[:,0], coords[:,1], U[N:,1], cmap=color_map, levels=levelsC)
-ax4.set_title("$C$ at $t=%1.3f" %sol.t[1] + "$")
+ax4.tricontourf(coords[:,0], coords[:,1], U[N:,Nt//4], cmap=color_map, levels=levelsC)
+ax4.set_title(r"$C$ at $t=%1.3f" %sol.t[Nt//4] + "$")
 
-ax5.tricontourf(coords[:,0], coords[:,1], U[:N,2], cmap=color_map, levels=levelsP)
-ax5.set_title("$\Psi$ at $t=%1.3f" %sol.t[2] + "$")
+ax5.tricontourf(coords[:,0], coords[:,1], U[:N,Nt//2], cmap=color_map, levels=levelsP)
+ax5.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[Nt//2] + "$")
 
-ax6.tricontourf(coords[:,0], coords[:,1], U[N:,2], cmap=color_map, levels=levelsC)
-ax6.set_title("$C$ at $t=%1.3f" %sol.t[2] + "$")
+ax6.tricontourf(coords[:,0], coords[:,1], U[N:,Nt//2], cmap=color_map, levels=levelsC)
+ax6.set_title(r"$C$ at $t=%1.3f" %sol.t[Nt//2] + "$")
 
-ax7.tricontourf(coords[:,0], coords[:,1], U[:N,3], cmap=color_map, levels=levelsP)
-ax7.set_title("$\Psi$ at $t=%1.3f" %sol.t[3] + "$")
+ax7.tricontourf(coords[:,0], coords[:,1], U[:N,Nt*3//4], cmap=color_map, levels=levelsP)
+ax7.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[Nt*3//4] + "$")
 
-ax8.tricontourf(coords[:,0], coords[:,1], U[N:,3], cmap=color_map, levels=levelsC)
-ax8.set_title("$C$ at $t=%1.3f" %sol.t[3] + "$")
+ax8.tricontourf(coords[:,0], coords[:,1], U[N:,Nt*3//4], cmap=color_map, levels=levelsC)
+ax8.set_title(r"$C$ at $t=%1.3f" %sol.t[Nt*3//4] + "$")
 
-ax9.tricontourf(coords[:,0], coords[:,1], U[:N,4], cmap=color_map, levels=levelsP)
-ax9.set_title("$\Psi$ at $t=%1.3f" %sol.t[4] + "$")
+ax9.tricontourf(coords[:,0], coords[:,1], U[:N,-1], cmap=color_map, levels=levelsP)
+ax9.set_title(r"$\Psi$ at $t=%1.3f" %sol.t[-1] + "$")
 
-ax10.tricontourf(coords[:,0], coords[:,1], U[N:,4], cmap=color_map, levels=levelsC)
-ax10.set_title("$C$ at $t=%1.3f" %sol.t[4] + "$")
+ax10.tricontourf(coords[:,0], coords[:,1], U[N:,-1], cmap=color_map, levels=levelsC)
+ax10.set_title(r"$C$ at $t=%1.3f" %sol.t[-1] + "$")
 
-fig.suptitle("Solution with $N=%d" %coords.shape[0] +"$")
+fig.suptitle(r"Solution with $N=%d" %coords.shape[0] +"$")
 
 plt.show()
